@@ -1,0 +1,38 @@
+server:
+  id: 1
+  name: "game1"
+  host: "0.0.0.0"
+  port: 44445
+  max_conn: 10000
+
+gate:
+  read_timeout: 30s
+  write_timeout: 30s
+  msg_queue_size: 1000
+
+agent:
+  count: 100
+  players_per_agent: 100
+
+cluster:
+  login_addr: "127.0.0.1:50051"
+  db_addr: "127.0.0.1:50052"
+
+database:
+  mysql:
+    host: "127.0.0.1"
+    port: 3306
+    database: "game"
+    username: "root"
+    password: "xxx"
+    max_open: 100
+    max_idle: 20
+  redis:
+    host: "127.0.0.1"
+    port: 6379
+    db: 0
+    pool_size: 100
+
+log:
+  level: "info"
+  output: "./logs/game.log"
