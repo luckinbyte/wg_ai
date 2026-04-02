@@ -1,0 +1,60 @@
+syntax = "proto3";
+package cs;
+option go_package = "github.com/yourorg/wg_ai/proto/cs";
+
+// 消息头
+message Header {
+    uint32 msg_id = 1;
+    uint32 sequence = 2;
+}
+
+// 请求包装
+message Request {
+    Header header = 1;
+    bytes payload = 2;
+}
+
+// 响应包装
+message Response {
+    Header header = 1;
+    int32 code = 2;
+    bytes payload = 3;
+}
+
+// 推送消息
+message Push {
+    uint32 msg_id = 1;
+    bytes payload = 2;
+}
+
+// 握手
+message Handshake {
+    string token = 1;
+}
+
+message HandshakeResponse {
+    int32 code = 1;
+    string message = 2;
+}
+
+// 登录
+message LoginRequest {
+    string token = 1;
+}
+
+message LoginResponse {
+    int64 rid = 1;
+    string name = 2;
+}
+
+// 心跳
+message HeartbeatRequest {}
+message HeartbeatResponse {}
+
+// 消息ID定义
+enum MsgID {
+    MSG_ID_NONE = 0;
+    MSG_ID_HANDSHAKE = 1;
+    MSG_ID_LOGIN = 1001;
+    MSG_ID_HEARTBEAT = 1002;
+}

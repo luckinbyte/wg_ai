@@ -1,0 +1,72 @@
+syntax = "proto3";
+package ss;
+option go_package = "github.com/yourorg/wg_ai/proto/ss";
+
+// Login Service
+service LoginService {
+    rpc NotifyLogin(LoginNotifyRequest) returns (LoginNotifyResponse);
+    rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
+}
+
+message LoginNotifyRequest {
+    int64 uid = 1;
+    string token = 2;
+}
+
+message LoginNotifyResponse {
+    bool success = 1;
+}
+
+message ValidateTokenRequest {
+    string token = 1;
+}
+
+message ValidateTokenResponse {
+    int64 uid = 1;
+    bool valid = 2;
+}
+
+// DB Service
+service DBService {
+    rpc LoadRole(LoadRoleRequest) returns (LoadRoleResponse);
+    rpc SaveRole(SaveRoleRequest) returns (SaveRoleResponse);
+    rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
+    rpc GetUser(GetUserRequest) returns (GetUserResponse);
+}
+
+message LoadRoleRequest {
+    int64 rid = 1;
+}
+
+message LoadRoleResponse {
+    bytes data = 1;
+    bool found = 2;
+}
+
+message SaveRoleRequest {
+    int64 rid = 1;
+    bytes data = 2;
+}
+
+message SaveRoleResponse {
+    bool success = 1;
+}
+
+message CreateUserRequest {
+    string username = 1;
+    string password_hash = 2;
+}
+
+message CreateUserResponse {
+    int64 uid = 1;
+}
+
+message GetUserRequest {
+    string username = 1;
+}
+
+message GetUserResponse {
+    int64 uid = 1;
+    string password_hash = 2;
+    bool found = 3;
+}
