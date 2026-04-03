@@ -29,6 +29,12 @@ type DataAccessor interface {
     MarkDirty()
 }
 
+// DataAdapter 数据访问适配器接口
+type DataAdapter interface {
+    DataAccessor
+    RID() int64
+}
+
 // ============ 会话推送接口 ============
 
 // SessionPush 会话推送接口

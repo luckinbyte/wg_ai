@@ -3,6 +3,7 @@ package plugin
 import (
     "encoding/json"
     "os"
+    "sync"
 )
 
 // RouteConfig 路由配置
@@ -15,17 +16,21 @@ type RouteConfig struct {
 // Router 消息路由器
 type Router struct {
     routes map[uint16]*RouteConfig
+    mux    sync.RWMutex
 }
 
 // NewRouter 创建路由器
 func NewRouter() *Router {
     return &Router{
         routes: make(map[uint16]*RouteConfig),
+        mux:    sync.RWMutex{},
     }
 }
 
 // Register 注册路由
 func (r *Router) Register(msgID uint16, module, method string) {
+    r.mux.Lock()
+    defer r.mux.Unlock()
     r.routes[msgID] = &RouteConfig{
         MsgID:  msgID,
         Module: module,
@@ -35,12 +40,17 @@ func (r *Router) Register(msgID uint16, module, method string) {
 
 // Get 获取路由配置
 func (r *Router) Get(msgID uint16) (*RouteConfig, bool) {
+    r.mux.RLock()
+    defer r.mux.RUnlock()
     cfg, ok := r.routes[msgID]
     return cfg, ok
 }
 
 // LoadFromMap 从 map 列表加载路由
 func (r *Router) LoadFromMap(routes []map[string]any) error {
+    r.mux.Lock()
+    defer r.mux.Unlock()
+
     for _, route := range routes {
         msgID, ok := route["msg_id"].(float64)
         if !ok {
@@ -50,7 +60,11 @@ func (r *Router) LoadFromMap(routes []map[string]any) error {
         module, _ := route["module"].(string)
         method, _ := route["method"].(string)
 
-        r.Register(uint16(msgID), module, method)
+        r.routes[uint16(msgID)] = &RouteConfig{
+            MsgID:  uint16(msgID),
+            Module: module,
+            Method: method,
+        }
     }
     return nil
 }
@@ -72,5 +86,7 @@ func (r *Router) LoadFromConfig(path string) error {
 
 // All 获取所有路由
 func (r *Router) All() map[uint16]*RouteConfig {
+    r.mux.RLock()
+    defer r.mux.RUnlock()
     return r.routes
 }
