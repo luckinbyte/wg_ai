@@ -72,7 +72,7 @@ func (s *TCPServer) handleConnection(conn net.Conn) {
 	conn.SetDeadline(time.Now().Add(30 * time.Second))
 
 	// Read handshake
-	msgType, _, err := c.ReadMessage()
+	msgType, data, err := c.ReadMessage()
 	if err != nil {
 		return
 	}
@@ -80,8 +80,16 @@ func (s *TCPServer) handleConnection(conn net.Conn) {
 		return
 	}
 
-	// TODO: Validate token via login service
-	// For now, just send success response
+	// TODO: Parse and validate token via login service
+	// For now, use UID=1 for testing
+	_ = data // token data (unused for now)
+
+	// Create session
+	sess := s.sessionMgr.Create(1, conn) // UID=1 for now
+
+	// Bind to agent
+	ag := s.agentMgr.Assign()
+	ag.BindSession(sess)
 
 	// Send handshake response
 	resp := []byte{0, 0, 0, 0} // code = 0 (success)
@@ -96,11 +104,15 @@ func (s *TCPServer) handleConnection(conn net.Conn) {
 		}
 
 		if msgType == MsgTypeRequest && len(data) >= 2 {
-			ag := s.agentMgr.Assign()
 			ag.Push(&agent.Message{
 				MsgID:   uint16(data[0])<<8 | uint16(data[1]),
 				Payload: data[2:],
+				Sess:    sess,
 			})
 		}
 	}
+
+	// Cleanup
+	ag.UnbindSession(sess.RID)
+	s.sessionMgr.Remove(sess.RID)
 }

@@ -23,13 +23,15 @@ type Agent struct {
 }
 
 func New(id, queueSize int) *Agent {
-	return &Agent{
+	a := &Agent{
 		ID:         id,
 		players:    make(map[int64]*session.Session),
 		msgQueue:   make(chan *Message, queueSize),
 		stopCh:     make(chan struct{}),
 		dispatcher: NewDispatcher(),
 	}
+	RegisterDefaultHandlers(a)
+	return a
 }
 
 func (a *Agent) Push(msg *Message) {
