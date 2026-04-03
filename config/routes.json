@@ -1,0 +1,7 @@
+[
+    {"msg_id": 1001, "module": "role", "method": "login"},
+    {"msg_id": 1002, "module": "role", "method": "heartbeat"},
+    {"msg_id": 1003, "module": "role", "method": "get_info"},
+    {"msg_id": 2001, "module": "item", "method": "list"},
+    {"msg_id": 2002, "module": "item", "method": "use"},
+    {"msg_id": 2003, "module": "item", "method": "add"}
