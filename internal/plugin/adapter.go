@@ -44,7 +44,7 @@ func (a *DataAdapter) MarkDirty() {
     a.data.Unlock()
 }
 
- // RID 获取玩家ID
+// RID 获取玩家ID
 func (a *DataAdapter) RID() int64 {
     return a.rid
 }
