@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/yourorg/wg_ai/internal/auth"
 	"github.com/yourorg/wg_ai/internal/common/logger"
@@ -52,7 +53,24 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	srv.Stop()
+
+	logger.Log.Info("Shutting down...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	done := make(chan struct{})
+	go func() {
+		srv.Stop()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		logger.Log.Info("Server stopped gracefully")
+	case <-ctx.Done():
+		logger.Log.Warn("Shutdown timeout, forcing exit")
+	}
 }
 
 func getEnv(key, fallback string) string {
