@@ -1,0 +1,66 @@
+package data
+
+import (
+	"sync"
+)
+
+// PlayerData 玩家数据容器
+type PlayerData struct {
+	RID    int64          `json:"rid"`     // 角色ID
+	Base   map[string]any `json:"base"`    // 基础字段: name, level, exp, gold...
+		Arrays map[string]any `json:"arrays"`  // 数组字段: items, heroes, tasks...
+		Dirty  bool           `json:"-"`       // 脏标记
+		mutex  sync.RWMutex   `json:"-"`       // 读写锁
+}
+
+// NewPlayerData 创建空的玩家数据
+func NewPlayerData(rid int64) *PlayerData {
+	return &PlayerData{
+		RID:    rid,
+		Base:   make(map[string]any),
+		Arrays: make(map[string]any),
+		Dirty:  false,
+	}
+}
+
+// Lock 加写锁
+func (p *PlayerData) Lock() {
+	p.mutex.Lock()
+}
+
+// Unlock 解写锁
+func (p *PlayerData) Unlock() {
+	p.mutex.Unlock()
+}
+
+// RLock 加读锁
+func (p *PlayerData) RLock() {
+	p.mutex.RLock()
+}
+
+// RUnlock 解读锁
+func (p *PlayerData) RUnlock() {
+	p.mutex.RUnlock()
+}
+
+// GetField 获取基础字段
+func (p *PlayerData) GetField(key string) any {
+	p.mutex.RLock()
+	defer p.mutex.RUnlock()
+	return p.Base[key]
+}
+
+// SetField 设置基础字段
+func (p *PlayerData) SetField(key string, value any) {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+	p.Base[key] = value
+	p.Dirty = true
+}
+
+// GetArray 获取数组字段
+func (p *PlayerData) GetArray(key string) any {
+	p.mutex.RLock()
+	defer p.mutex.RUnlock()
+	return p.Arrays[key]
+}
