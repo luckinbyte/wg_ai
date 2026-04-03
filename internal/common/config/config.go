@@ -14,6 +14,20 @@ type GameConfig struct {
 	Cluster  ClusterConfig  `mapstructure:"cluster"`
 	Database DatabaseConfig `mapstructure:"database"`
 	Log      LogConfig      `mapstructure:"log"`
+	Plugin   PluginConfig   `mapstructure:"plugin"`
+	Admin    AdminConfig    `mapstructure:"admin"`
+}
+
+// PluginConfig 插件配置
+type PluginConfig struct {
+	Dir       string `mapstructure:"dir"`        // 插件目录: ./plugins
+	RouteFile string `mapstructure:"route_file"` // 路由配置: ./config/routes.json
+	Watch     bool   `mapstructure:"watch"`      // 是否启用文件监听
+}
+
+// AdminConfig 管理接口配置
+type AdminConfig struct {
+	Addr string `mapstructure:"addr"` // 管理接口地址: :8081
 }
 
 type ServerConfig struct {
