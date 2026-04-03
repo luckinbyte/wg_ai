@@ -1,0 +1,12 @@
+server:
+  grpc_port: 50051
+
+token:
+  secret: "your-secret-key-change-in-production"
+  expire: "24h"
+
+database:
+  db_addr: "127.0.0.1:50052"
+
+log:
+  level: "info"
