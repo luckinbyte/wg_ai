@@ -1,4 +1,4 @@
-.PHONY: all build test clean proto plugins plugin-role plugin-item
+.PHONY: all build test clean proto plugins plugin-role plugin-item plugin-soldier
 
 all: proto build
 
@@ -8,7 +8,7 @@ build:
 	go build -o bin/db ./cmd/db
 
 # 编译所有插件
-plugins: plugin-role plugin-item
+plugins: plugin-role plugin-item plugin-soldier
 
 # 编译单个插件
 plugin-role:
@@ -16,6 +16,9 @@ plugin-role:
 
 plugin-item:
 	go build -buildmode=plugin -o plugins/item.so ./plugin/item
+
+plugin-soldier:
+	go build -buildmode=plugin -o plugins/soldier.so ./plugin/soldier
 
 test:
 	go test -v ./...
@@ -39,3 +42,8 @@ hotreload-item: plugin-item
 	curl -X POST http://localhost:8081/admin/hotreload \
 		-H "Content-Type: application/json" \
 		-d '{"module": "item", "path": "./plugins/item.so"}'
+
+hotreload-soldier: plugin-soldier
+	curl -X POST http://localhost:8081/admin/hotreload \
+		-H "Content-Type: application/json" \
+		-d '{"module": "soldier", "path": "./plugins/soldier.so"}'

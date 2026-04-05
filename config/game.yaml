@@ -9,6 +9,7 @@ gate:
   read_timeout: 30s
   write_timeout: 30s
   msg_queue_size: 1000
+  ws_port: 44446  # WebSocket端口
 
 agent:
   count: 100

@@ -7,28 +7,46 @@ import (
     baseplugin "github.com/yourorg/wg_ai/plugin"
 )
 
+// ModuleLoadCallback 模块加载回调函数
+type ModuleLoadCallback func(moduleName string, module baseplugin.LogicModule)
+
 // Manager 插件管理器
 type Manager struct {
-    plugins map[string]*goplugin.Plugin // module -> go plugin (.so)
-    modules map[string]baseplugin.LogicModule // module -> LogicModule
-    router  *baseplugin.Router // 消息路由
-    mutex   sync.RWMutex
+    plugins   map[string]*goplugin.Plugin        // module -> go plugin (.so)
+    modules   map[string]baseplugin.LogicModule  // module -> LogicModule
+    router    *baseplugin.Router                 // 消息路由
+    callbacks map[string][]ModuleLoadCallback   // module -> load callbacks
+    mutex     sync.RWMutex
 }
 
 // NewManager 创建插件管理器
 func NewManager() *Manager {
     return &Manager{
-        plugins: make(map[string]*goplugin.Plugin),
-        modules: make(map[string]baseplugin.LogicModule),
-        router:  baseplugin.NewRouter(),
+        plugins:   make(map[string]*goplugin.Plugin),
+        modules:   make(map[string]baseplugin.LogicModule),
+        router:    baseplugin.NewRouter(),
+        callbacks: make(map[string][]ModuleLoadCallback),
     }
 }
 
 // RegisterModule 直接注册模块 (用于测试或不使用 .so 的场景)
 func (m *Manager) RegisterModule(name string, module baseplugin.LogicModule) {
     m.mutex.Lock()
-    defer m.mutex.Unlock()
     m.modules[name] = module
+    callbacks := m.callbacks[name]
+    m.mutex.Unlock()
+
+    // 触发回调
+    for _, cb := range callbacks {
+        cb(name, module)
+    }
+}
+
+// RegisterLoadCallback 注册模块加载回调
+func (m *Manager) RegisterLoadCallback(moduleName string, callback ModuleLoadCallback) {
+    m.mutex.Lock()
+    defer m.mutex.Unlock()
+    m.callbacks[moduleName] = append(m.callbacks[moduleName], callback)
 }
 
 // LoadPlugin 加载 .so 插件
@@ -39,7 +57,7 @@ func (m *Manager) LoadPlugin(moduleName, path string) error {
         return err
     }
 
-    // 2. 查找导出符号 (如 RoleModule, ItemModule)
+    // 2. 查找导出符号 (如 RoleModule, ItemModule, SoldierModule)
     symName := moduleName + "Module"
     sym, err := p.Lookup(symName)
     if err != nil {
@@ -54,9 +72,15 @@ func (m *Manager) LoadPlugin(moduleName, path string) error {
 
     // 4. 注册模块
     m.mutex.Lock()
-    defer m.mutex.Unlock()
     m.plugins[moduleName] = p
     m.modules[moduleName] = logicModule
+    callbacks := m.callbacks[moduleName]
+    m.mutex.Unlock()
+
+    // 触发回调
+    for _, cb := range callbacks {
+        cb(moduleName, logicModule)
+    }
 
     return nil
 }

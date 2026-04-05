@@ -46,6 +46,7 @@ type GateConfig struct {
 	ReadTimeout  time.Duration `mapstructure:"read_timeout"`
 	WriteTimeout time.Duration `mapstructure:"write_timeout"`
 	MsgQueueSize int           `mapstructure:"msg_queue_size"`
+	WSPort       int           `mapstructure:"ws_port"` // WebSocket端口
 }
 
 type AgentConfig struct {
