@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	ss "github.com/yourorg/wg_ai/proto/ss"
+	ss "github.com/luckinbyte/wg_ai/proto/ss"
 )
 
 type DBService struct {

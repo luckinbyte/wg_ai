@@ -3,7 +3,7 @@ package plugin
 import (
     "testing"
 
-    "github.com/yourorg/wg_ai/internal/data"
+    "github.com/luckinbyte/wg_ai/internal/data"
 )
 
 func TestDataAdapterGetField(t *testing.T) {

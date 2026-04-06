@@ -3,7 +3,7 @@ package main
 import (
     "time"
 
-    baseplugin "github.com/yourorg/wg_ai/plugin"
+    baseplugin "github.com/luckinbyte/wg_ai/plugin"
 )
 
 // ItemData 物品数据结构

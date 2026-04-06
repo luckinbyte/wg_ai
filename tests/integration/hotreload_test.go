@@ -8,10 +8,10 @@ import (
 	"testing"
 	"bytes"
 
-	"github.com/yourorg/wg_ai/internal/admin"
-	"github.com/yourorg/wg_ai/internal/data"
-	"github.com/yourorg/wg_ai/internal/plugin"
-	baseplugin "github.com/yourorg/wg_ai/plugin"
+	"github.com/luckinbyte/wg_ai/internal/admin"
+	"github.com/luckinbyte/wg_ai/internal/data"
+	"github.com/luckinbyte/wg_ai/internal/plugin"
+	baseplugin "github.com/luckinbyte/wg_ai/plugin"
 )
 
 // TestHotReloadFlow 测试完整的热更流程

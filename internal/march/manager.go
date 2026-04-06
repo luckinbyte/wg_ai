@@ -6,8 +6,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/yourorg/wg_ai/internal/battle"
-	"github.com/yourorg/wg_ai/internal/scene"
+	"github.com/luckinbyte/wg_ai/internal/battle"
+	"github.com/luckinbyte/wg_ai/internal/scene"
 )
 
 // 全局军队ID生成器

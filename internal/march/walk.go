@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/yourorg/wg_ai/internal/scene"
+	"github.com/luckinbyte/wg_ai/internal/scene"
 )
 
 // WalkSimulator 移动模拟器

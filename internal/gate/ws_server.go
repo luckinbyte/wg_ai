@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/yourorg/wg_ai/internal/agent"
-	"github.com/yourorg/wg_ai/internal/session"
+	"github.com/luckinbyte/wg_ai/internal/agent"
+	"github.com/luckinbyte/wg_ai/internal/session"
 )
 
 var upgrader = websocket.Upgrader{

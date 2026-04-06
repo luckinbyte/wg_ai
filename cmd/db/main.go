@@ -8,10 +8,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/yourorg/wg_ai/internal/common/logger"
-	"github.com/yourorg/wg_ai/internal/db"
-	"github.com/yourorg/wg_ai/internal/rpc"
-	ss "github.com/yourorg/wg_ai/proto/ss"
+	"github.com/luckinbyte/wg_ai/internal/common/logger"
+	"github.com/luckinbyte/wg_ai/internal/db"
+	"github.com/luckinbyte/wg_ai/internal/rpc"
+	ss "github.com/luckinbyte/wg_ai/proto/ss"
 )
 
 func main() {

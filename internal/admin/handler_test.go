@@ -7,7 +7,7 @@ import (
     "net/http/httptest"
     "testing"
 
-    "github.com/yourorg/wg_ai/internal/plugin"
+    "github.com/luckinbyte/wg_ai/internal/plugin"
 )
 
 func TestHandleHotReload(t *testing.T) {

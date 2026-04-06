@@ -4,7 +4,7 @@ import (
     goplugin "plugin"
     "sync"
 
-    baseplugin "github.com/yourorg/wg_ai/plugin"
+    baseplugin "github.com/luckinbyte/wg_ai/plugin"
 )
 
 // ModuleLoadCallback 模块加载回调函数

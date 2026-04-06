@@ -1,7 +1,7 @@
 package march
 
 import (
-	baseplugin "github.com/yourorg/wg_ai/plugin"
+	baseplugin "github.com/luckinbyte/wg_ai/plugin"
 )
 
 // DataAccessor 数据访问器别名

@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/yourorg/wg_ai/internal/agent"
-	"github.com/yourorg/wg_ai/internal/gate"
-	"github.com/yourorg/wg_ai/internal/session"
+	"github.com/luckinbyte/wg_ai/internal/agent"
+	"github.com/luckinbyte/wg_ai/internal/gate"
+	"github.com/luckinbyte/wg_ai/internal/session"
 )
 
 func TestConnectionAndHeartbeat(t *testing.T) {

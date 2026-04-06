@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/yourorg/wg_ai/internal/agent"
-	"github.com/yourorg/wg_ai/internal/session"
+	"github.com/luckinbyte/wg_ai/internal/agent"
+	"github.com/luckinbyte/wg_ai/internal/session"
 )
 
 func TestTCPServerStart(t *testing.T) {

@@ -597,7 +597,7 @@ const file_proto_cs_protocol_proto_rawDesc = "" +
 	"\vMSG_ID_NONE\x10\x00\x12\x14\n" +
 	"\x10MSG_ID_HANDSHAKE\x10\x01\x12\x11\n" +
 	"\fMSG_ID_LOGIN\x10\xe9\a\x12\x15\n" +
-	"\x10MSG_ID_HEARTBEAT\x10\xea\aB#Z!github.com/yourorg/wg_ai/proto/csb\x06proto3"
+	"\x10MSG_ID_HEARTBEAT\x10\xea\aB#Z!github.com/luckinbyte/wg_ai/proto/csb\x06proto3"
 
 var (
 	file_proto_cs_protocol_proto_rawDescOnce sync.Once

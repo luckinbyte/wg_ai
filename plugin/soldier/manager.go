@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	baseplugin "github.com/yourorg/wg_ai/plugin"
+	baseplugin "github.com/luckinbyte/wg_ai/plugin"
 )
 
 // ResourceCost 资源消耗

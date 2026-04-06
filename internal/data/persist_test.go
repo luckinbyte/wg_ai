@@ -4,7 +4,7 @@ import (
     "encoding/json"
     "testing"
 
-    "github.com/yourorg/wg_ai/internal/data"
+    "github.com/luckinbyte/wg_ai/internal/data"
 )
 
 func TestPersistSerialize(t *testing.T) {

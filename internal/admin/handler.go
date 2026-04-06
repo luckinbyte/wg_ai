@@ -4,7 +4,7 @@ import (
     "encoding/json"
     "net/http"
 
-    "github.com/yourorg/wg_ai/internal/plugin"
+    "github.com/luckinbyte/wg_ai/internal/plugin"
 )
 
 // Handler 管理接口处理器

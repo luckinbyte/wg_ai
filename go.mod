@@ -1,4 +1,4 @@
-module github.com/yourorg/wg_ai
+module github.com/luckinbyte/wg_ai
 
 go 1.26.1
 

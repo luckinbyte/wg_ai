@@ -3,7 +3,7 @@ package scene
 import (
 	"encoding/json"
 
-	baseplugin "github.com/yourorg/wg_ai/plugin"
+	baseplugin "github.com/luckinbyte/wg_ai/plugin"
 )
 
 // Module 场景模块 (实现 LogicModule 接口)

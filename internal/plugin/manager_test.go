@@ -3,8 +3,8 @@ package plugin
 import (
     "testing"
 
-    "github.com/yourorg/wg_ai/internal/data"
-    baseplugin "github.com/yourorg/wg_ai/plugin"
+    "github.com/luckinbyte/wg_ai/internal/data"
+    baseplugin "github.com/luckinbyte/wg_ai/plugin"
 )
 
 // MockLogicModule 模拟逻辑模块

@@ -3,7 +3,7 @@ package agent
 import (
 	"sync"
 
-	"github.com/yourorg/wg_ai/internal/session"
+	"github.com/luckinbyte/wg_ai/internal/session"
 )
 
 type Message struct {

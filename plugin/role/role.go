@@ -1,7 +1,7 @@
 package main
 
 import (
-    baseplugin "github.com/yourorg/wg_ai/plugin"
+    baseplugin "github.com/luckinbyte/wg_ai/plugin"
 )
 
 // RoleLogic 角色逻辑模块

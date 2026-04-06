@@ -9,9 +9,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/yourorg/wg_ai/internal/common/config"
-	"github.com/yourorg/wg_ai/internal/common/logger"
-	"github.com/yourorg/wg_ai/internal/game"
+	"github.com/luckinbyte/wg_ai/internal/common/config"
+	"github.com/luckinbyte/wg_ai/internal/common/logger"
+	"github.com/luckinbyte/wg_ai/internal/game"
 )
 
 func main() {

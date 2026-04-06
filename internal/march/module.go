@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	baseplugin "github.com/yourorg/wg_ai/plugin"
-	"github.com/yourorg/wg_ai/internal/scene"
+	baseplugin "github.com/luckinbyte/wg_ai/plugin"
+	"github.com/luckinbyte/wg_ai/internal/scene"
 )
 
 // Module 行军模块 (实现 LogicModule 接口)

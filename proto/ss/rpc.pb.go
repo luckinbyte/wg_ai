@@ -649,7 +649,7 @@ const file_proto_ss_rpc_proto_rawDesc = "" +
 	"\bSaveRole\x12\x13.ss.SaveRoleRequest\x1a\x14.ss.SaveRoleResponse\x12;\n" +
 	"\n" +
 	"CreateUser\x12\x15.ss.CreateUserRequest\x1a\x16.ss.CreateUserResponse\x122\n" +
-	"\aGetUser\x12\x12.ss.GetUserRequest\x1a\x13.ss.GetUserResponseB#Z!github.com/yourorg/wg_ai/proto/ssb\x06proto3"
+	"\aGetUser\x12\x12.ss.GetUserRequest\x1a\x13.ss.GetUserResponseB#Z!github.com/luckinbyte/wg_ai/proto/ssb\x06proto3"
 
 var (
 	file_proto_ss_rpc_proto_rawDescOnce sync.Once

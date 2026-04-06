@@ -1,0 +1,31 @@
+{
+  "version": "1.0.0",
+  "soldiers": [
+    {"id": 101, "type": 1, "level": 1, "name": "民兵", "attack": 8, "defense": 12, "hp": 80, "speed": 5, "load": 8, "power": 40, "cost_food": 80, "cost_wood": 40, "cost_stone": 0, "cost_gold": 5, "train_time": 20},
+    {"id": 102, "type": 1, "level": 2, "name": "步兵", "attack": 15, "defense": 22, "hp": 150, "speed": 5, "load": 12, "power": 80, "cost_food": 150, "cost_wood": 80, "cost_stone": 30, "cost_gold": 15, "train_time": 40},
+    {"id": 103, "type": 1, "level": 3, "name": "重装步兵", "attack": 28, "defense": 40, "hp": 280, "speed": 4, "load": 18, "power": 160, "cost_food": 300, "cost_wood": 160, "cost_stone": 80, "cost_gold": 35, "train_time": 80},
+    {"id": 104, "type": 1, "level": 4, "name": "精锐步兵", "attack": 50, "defense": 70, "hp": 500, "speed": 5, "load": 25, "power": 300, "cost_food": 600, "cost_wood": 320, "cost_stone": 180, "cost_gold": 80, "train_time": 150},
+    {"id": 105, "type": 1, "level": 5, "name": "皇家卫队", "attack": 90, "defense": 120, "hp": 900, "speed": 6, "load": 35, "power": 550, "cost_food": 1200, "cost_wood": 650, "cost_stone": 400, "cost_gold": 180, "train_time": 280},
+    {"id": 201, "type": 2, "level": 1, "name": "斥候骑兵", "attack": 12, "defense": 6, "hp": 60, "speed": 12, "load": 5, "power": 35, "cost_food": 100, "cost_wood": 60, "cost_stone": 0, "cost_gold": 10, "train_time": 25},
+    {"id": 202, "type": 2, "level": 2, "name": "轻骑兵", "attack": 22, "defense": 12, "hp": 110, "speed": 14, "load": 8, "power": 70, "cost_food": 200, "cost_wood": 120, "cost_stone": 40, "cost_gold": 25, "train_time": 50},
+    {"id": 203, "type": 2, "level": 3, "name": "重骑兵", "attack": 40, "defense": 22, "hp": 200, "speed": 13, "load": 15, "power": 140, "cost_food": 400, "cost_wood": 240, "cost_stone": 120, "cost_gold": 60, "train_time": 100},
+    {"id": 204, "type": 2, "level": 4, "name": "铁骑", "attack": 72, "defense": 38, "hp": 360, "speed": 14, "load": 22, "power": 260, "cost_food": 800, "cost_wood": 480, "cost_stone": 280, "cost_gold": 130, "train_time": 180},
+    {"id": 205, "type": 2, "level": 5, "name": "圣殿骑士", "attack": 130, "defense": 65, "hp": 650, "speed": 16, "load": 32, "power": 480, "cost_food": 1600, "cost_wood": 960, "cost_stone": 600, "cost_gold": 300, "train_time": 340},
+    {"id": 301, "type": 3, "level": 1, "name": "弓箭手", "attack": 14, "defense": 4, "hp": 50, "speed": 4, "load": 6, "power": 30, "cost_food": 70, "cost_wood": 80, "cost_stone": 0, "cost_gold": 8, "train_time": 22},
+    {"id": 302, "type": 3, "level": 2, "name": "弩手", "attack": 26, "defense": 8, "hp": 90, "speed": 4, "load": 10, "power": 65, "cost_food": 140, "cost_wood": 160, "cost_stone": 50, "cost_gold": 20, "train_time": 45},
+    {"id": 303, "type": 3, "level": 3, "name": "长弓手", "attack": 48, "defense": 14, "hp": 160, "speed": 4, "load": 16, "power": 130, "cost_food": 280, "cost_wood": 320, "cost_stone": 130, "cost_gold": 50, "train_time": 90},
+    {"id": 304, "type": 3, "level": 4, "name": "神射手", "attack": 85, "defense": 25, "hp": 280, "speed": 5, "load": 24, "power": 240, "cost_food": 560, "cost_wood": 640, "cost_stone": 300, "cost_gold": 110, "train_time": 165},
+    {"id": 305, "type": 3, "level": 5, "name": "鹰眼猎手", "attack": 150, "defense": 45, "hp": 500, "speed": 6, "load": 36, "power": 440, "cost_food": 1120, "cost_wood": 1280, "cost_stone": 650, "cost_gold": 250, "train_time": 310},
+    {"id": 401, "type": 4, "level": 1, "name": "冲车", "attack": 5, "defense": 20, "hp": 200, "speed": 2, "load": 20, "power": 50, "cost_food": 100, "cost_wood": 150, "cost_stone": 50, "cost_gold": 15, "train_time": 40},
+    {"id": 402, "type": 4, "level": 2, "name": "投石车", "attack": 35, "defense": 8, "hp": 150, "speed": 2, "load": 30, "power": 100, "cost_food": 200, "cost_wood": 300, "cost_stone": 100, "cost_gold": 40, "train_time": 80},
+    {"id": 403, "type": 4, "level": 3, "name": "弩炮", "attack": 65, "defense": 15, "hp": 280, "speed": 2, "load": 45, "power": 200, "cost_food": 400, "cost_wood": 600, "cost_stone": 250, "cost_gold": 90, "train_time": 150},
+    {"id": 404, "type": 4, "level": 4, "name": "重型投石车", "attack": 120, "defense": 25, "hp": 500, "speed": 2, "load": 70, "power": 380, "cost_food": 800, "cost_wood": 1200, "cost_stone": 550, "cost_gold": 200, "train_time": 280},
+    {"id": 405, "type": 4, "level": 5, "name": "巨型攻城器", "attack": 220, "defense": 45, "hp": 900, "speed": 2, "load": 100, "power": 700, "cost_food": 1600, "cost_wood": 2400, "cost_stone": 1200, "cost_gold": 450, "train_time": 520}
+  ],
+  "soldierTypes": {
+    "1": {"id": 1, "name": "步兵", "description": "高防御，近战主力"},
+    "2": {"id": 2, "name": "骑兵", "description": "高机动，快速突击"},
+    "3": {"id": 3, "name": "弓兵", "description": "高攻击，远程输出"},
+    "4": {"id": 4, "name": "攻城", "description": "攻城利器，高负重"}
+  }
+}

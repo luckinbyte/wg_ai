@@ -3,7 +3,7 @@ package agent
 import (
 	"google.golang.org/protobuf/proto"
 
-	cs "github.com/yourorg/wg_ai/proto/cs"
+	cs "github.com/luckinbyte/wg_ai/proto/cs"
 )
 
 // RegisterDefaultHandlers registers built-in message handlers

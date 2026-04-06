@@ -6,7 +6,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	ss "github.com/yourorg/wg_ai/proto/ss"
+	ss "github.com/luckinbyte/wg_ai/proto/ss"
 )
 
 type ClientConfig struct {

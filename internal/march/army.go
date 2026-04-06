@@ -3,7 +3,7 @@ package march
 import (
 	"time"
 
-	"github.com/yourorg/wg_ai/internal/scene"
+	"github.com/luckinbyte/wg_ai/internal/scene"
 )
 
 // ArmyStatus 军队状态

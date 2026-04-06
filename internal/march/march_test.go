@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/yourorg/wg_ai/internal/scene"
+	"github.com/luckinbyte/wg_ai/internal/scene"
 )
 
 // TestArmyStatus 测试军队状态

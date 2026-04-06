@@ -3,7 +3,7 @@ package plugin
 import (
     "encoding/binary"
 
-    "github.com/yourorg/wg_ai/internal/session"
+    "github.com/luckinbyte/wg_ai/internal/session"
 )
 
 // SessionAdapter 会话推送适配器

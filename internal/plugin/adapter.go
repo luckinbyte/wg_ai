@@ -1,7 +1,7 @@
 package plugin
 
 import (
-    "github.com/yourorg/wg_ai/internal/data"
+    "github.com/luckinbyte/wg_ai/internal/data"
 )
 
 // DataAdapter 数据访问适配器 - 连接 PlayerData 和 DataAccessor 接口

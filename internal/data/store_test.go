@@ -3,7 +3,7 @@ package data_test
 import (
     "testing"
 
-    "github.com/yourorg/wg_ai/internal/data"
+    "github.com/luckinbyte/wg_ai/internal/data"
 )
 
 func TestNewPlayerStore(t *testing.T) {

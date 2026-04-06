@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	baseplugin "github.com/yourorg/wg_ai/plugin"
+	baseplugin "github.com/luckinbyte/wg_ai/plugin"
 )
 
 // ============ 医院系统 ============

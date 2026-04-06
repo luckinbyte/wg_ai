@@ -3,7 +3,7 @@ package plugin_test
 import (
     "testing"
 
-    "github.com/yourorg/wg_ai/plugin"
+    "github.com/luckinbyte/wg_ai/plugin"
 )
 
 func TestLogicResult(t *testing.T) {

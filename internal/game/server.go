@@ -4,16 +4,16 @@ import (
     "fmt"
     "net/http"
 
-    "github.com/yourorg/wg_ai/internal/admin"
-    "github.com/yourorg/wg_ai/internal/agent"
-    "github.com/yourorg/wg_ai/internal/common/config"
-    "github.com/yourorg/wg_ai/internal/data"
-    "github.com/yourorg/wg_ai/internal/gate"
-    "github.com/yourorg/wg_ai/internal/march"
-    "github.com/yourorg/wg_ai/internal/plugin"
-    "github.com/yourorg/wg_ai/internal/rpc"
-    "github.com/yourorg/wg_ai/internal/scene"
-    "github.com/yourorg/wg_ai/internal/session"
+    "github.com/luckinbyte/wg_ai/internal/admin"
+    "github.com/luckinbyte/wg_ai/internal/agent"
+    "github.com/luckinbyte/wg_ai/internal/common/config"
+    "github.com/luckinbyte/wg_ai/internal/data"
+    "github.com/luckinbyte/wg_ai/internal/gate"
+    "github.com/luckinbyte/wg_ai/internal/march"
+    "github.com/luckinbyte/wg_ai/internal/plugin"
+    "github.com/luckinbyte/wg_ai/internal/rpc"
+    "github.com/luckinbyte/wg_ai/internal/scene"
+    "github.com/luckinbyte/wg_ai/internal/session"
 )
 
 type Server struct {

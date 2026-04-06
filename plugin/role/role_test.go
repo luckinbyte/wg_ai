@@ -3,9 +3,9 @@ package main
 import (
     "testing"
 
-    "github.com/yourorg/wg_ai/internal/data"
-    "github.com/yourorg/wg_ai/internal/plugin"
-    baseplugin "github.com/yourorg/wg_ai/plugin"
+    "github.com/luckinbyte/wg_ai/internal/data"
+    "github.com/luckinbyte/wg_ai/internal/plugin"
+    baseplugin "github.com/luckinbyte/wg_ai/plugin"
 )
 
 func TestRoleLogicName(t *testing.T) {
