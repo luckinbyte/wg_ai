@@ -1,6 +1,6 @@
 syntax = "proto3";
 package cs;
-option go_package = "github.com/yourorg/wg_ai/proto/cs";
+option go_package = "github.com/luckinbyte/wg_ai/proto/cs";
 
 // 消息头
 message Header {

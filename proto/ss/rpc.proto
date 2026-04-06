@@ -1,6 +1,6 @@
 syntax = "proto3";
 package ss;
-option go_package = "github.com/yourorg/wg_ai/proto/ss";
+option go_package = "github.com/luckinbyte/wg_ai/proto/ss";
 
 // Login Service
 service LoginService {
