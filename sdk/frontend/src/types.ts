@@ -22,6 +22,58 @@ export interface Position {
   y: number;
 }
 
+// ============ 城池 ============
+
+/** 建筑数据 */
+export interface BuildingData {
+  type: number;
+  level: number;
+  hp: number;
+  entityId: number;
+}
+
+/** 建造队列项 */
+export interface BuildQueueItem {
+  id: number;
+  buildingType: number;
+  targetLevel: number;
+  startTime: number;
+  finishTime: number;
+}
+
+/** 城池数据 */
+export interface CityData {
+  cityId: number;
+  position: Position;
+  buildings: Record<number, BuildingData>;
+  buildQueue: BuildQueueItem[];
+}
+
+/** 城池信息响应 */
+export interface CityInfoResponse {
+  city: CityData;
+  completed: BuildQueueItem[];
+}
+
+/** 建造队列响应 */
+export interface BuildQueueResponse {
+  queue: BuildQueueItem[];
+  completed: BuildQueueItem[];
+}
+
+/** 升级建筑响应 */
+export interface UpgradeBuildingResponse {
+  queue: BuildQueueItem;
+}
+
+/** 取消建造响应 */
+export interface CancelBuildResponse {
+  queueId: number;
+}
+
+/** 资源产出响应 */
+export interface CityProductionResponse extends Resources {}
+
 // ============ 角色 ============
 
 /** 玩家信息 */

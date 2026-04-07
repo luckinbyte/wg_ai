@@ -54,6 +54,15 @@ export const MsgID = {
     Configs: 5012,
     Stats: 5013,
   },
+
+  // ============ 城池 (7001-7099) ============
+  City: {
+    GetInfo: 7001,
+    Upgrade: 7002,
+    CancelBuild: 7003,
+    BuildQueue: 7004,
+    Production: 7005,
+  },
 } as const;
 
 /** 推送消息ID (6001+) */
@@ -86,6 +95,7 @@ export const ModuleName: Record<number, string> = {
   5001: 'soldier', 5002: 'soldier', 5003: 'soldier', 5004: 'soldier', 5005: 'soldier',
   5006: 'soldier', 5007: 'soldier', 5008: 'soldier', 5009: 'soldier', 5010: 'soldier',
   5011: 'soldier', 5012: 'soldier', 5013: 'soldier',
+  7001: 'city', 7002: 'city', 7003: 'city', 7004: 'city', 7005: 'city',
 };
 
 /** 方法名称映射 */
@@ -98,4 +108,5 @@ export const MethodName: Record<number, string> = {
   5001: 'list', 5002: 'get', 5003: 'train', 5004: 'cancel_train', 5005: 'train_queue',
   5006: 'complete_train', 5007: 'heal', 5008: 'cancel_heal', 5009: 'heal_queue',
   5010: 'complete_heal', 5011: 'dismiss', 5012: 'configs', 5013: 'stats',
+  7001: 'get_info', 7002: 'upgrade', 7003: 'cancel_build', 7004: 'build_queue', 7005: 'production',
 };
