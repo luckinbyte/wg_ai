@@ -5,6 +5,8 @@ import (
 
     "github.com/luckinbyte/wg_ai/internal/data"
     "github.com/luckinbyte/wg_ai/internal/plugin"
+    "github.com/luckinbyte/wg_ai/internal/scene"
+    cityplugin "github.com/luckinbyte/wg_ai/plugin/city"
     baseplugin "github.com/luckinbyte/wg_ai/plugin"
 )
 
@@ -111,5 +113,46 @@ func TestRoleLogicMethodNotFound(t *testing.T) {
     _, err := logic.Handle(ctx, "unknown_method", nil)
     if err != baseplugin.ErrMethodNotFound {
         t.Errorf("expected ErrMethodNotFound, got %v", err)
+    }
+}
+
+func TestRoleLogicLoginInitCity(t *testing.T) {
+    if err := cityplugin.LoadBuildingConfig("../../config/building.yaml"); err != nil {
+        t.Fatal(err)
+    }
+
+    sceneMgr := scene.NewManager()
+    sceneMgr.CreateScene(scene.SceneConfig{ID: 1, Width: 1000, Height: 1000, GridSize: 50})
+
+    cityplugin.SetSceneManager(sceneMgr)
+    logic := &RoleLogic{}
+    playerData := data.NewPlayerData(1)
+    playerData.SetField("name", "player1")
+    playerData.SetField("level", int64(10))
+    playerData.SetField("exp", int64(5000))
+
+    ctx := &baseplugin.LogicContext{
+        RID:  1,
+        UID:  100,
+        Data: plugin.NewDataAdapter(1, playerData),
+    }
+
+    result, err := logic.Handle(ctx, "login", nil)
+    if err != nil {
+        t.Fatal(err)
+    }
+    if result.Code != 0 {
+        t.Fatalf("expected code 0, got %d", result.Code)
+    }
+
+    cityData, err := cityplugin.GetCity(ctx.Data)
+    if err != nil {
+        t.Fatal(err)
+    }
+    if cityData == nil {
+        t.Fatal("expected city data to be initialized")
+    }
+    if cityData.CityID == 0 {
+        t.Fatal("expected city entity id")
     }
 }

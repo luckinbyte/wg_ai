@@ -64,3 +64,11 @@ func (p *PlayerData) GetArray(key string) any {
 	defer p.mutex.RUnlock()
 	return p.Arrays[key]
 }
+
+// SetArray 设置数组字段
+func (p *PlayerData) SetArray(key string, value any) {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+	p.Arrays[key] = value
+	p.Dirty = true
+}

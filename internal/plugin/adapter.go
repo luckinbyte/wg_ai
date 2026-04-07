@@ -37,6 +37,12 @@ func (a *DataAdapter) GetArray(key string) (any, error) {
     return a.data.GetArray(key), nil
 }
 
+// SetArray 实现 DataAccessor 接口
+func (a *DataAdapter) SetArray(key string, value any) error {
+    a.data.SetArray(key, value)
+    return nil
+}
+
 // MarkDirty 实现 DataAccessor 接口
 func (a *DataAdapter) MarkDirty() {
     a.data.Lock()

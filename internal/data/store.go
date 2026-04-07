@@ -10,6 +10,7 @@ type DataStore interface {
     GetField(rid int64, key string) (any, error)
     SetField(rid int64, key string, value any) error
     GetArray(rid int64, key string) (any, error)
+    SetArray(rid int64, key string, value any) error
     MarkDirty(rid int64)
     GetPlayers(rids []int64) ([]*PlayerData, error)
 }
@@ -77,6 +78,16 @@ func (s *PlayerStore) GetArray(rid int64, key string) (any, error) {
         return nil, err
     }
     return p.GetArray(key), nil
+}
+
+// SetArray 设置数组字段
+func (s *PlayerStore) SetArray(rid int64, key string, value any) error {
+    p, err := s.GetPlayer(rid)
+    if err != nil {
+        return err
+    }
+    p.SetArray(key, value)
+    return nil
 }
 
 // MarkDirty 标记脏数据

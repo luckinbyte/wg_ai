@@ -1,0 +1,234 @@
+buildings:
+  - id: 101
+    type: 1
+    level: 1
+    name: "城堡 Lv.1"
+    hp: 10000
+    build_time: 0
+    cost_food: 0
+    cost_wood: 0
+    cost_stone: 0
+    cost_gold: 0
+    prod_food: 100
+    prod_wood: 100
+    prod_stone: 50
+    prod_gold: 10
+    train_slot: 1
+    heal_slot: 1
+    max_army: 2
+
+  - id: 102
+    type: 1
+    level: 2
+    name: "城堡 Lv.2"
+    hp: 20000
+    build_time: 3600
+    cost_food: 500
+    cost_wood: 1000
+    cost_stone: 500
+    cost_gold: 100
+    prod_food: 200
+    prod_wood: 200
+    prod_stone: 100
+    prod_gold: 20
+    train_slot: 2
+    heal_slot: 1
+    max_army: 3
+
+  - id: 103
+    type: 1
+    level: 3
+    name: "城堡 Lv.3"
+    hp: 35000
+    build_time: 7200
+    cost_food: 1200
+    cost_wood: 1800
+    cost_stone: 1000
+    cost_gold: 250
+    prod_food: 350
+    prod_wood: 350
+    prod_stone: 180
+    prod_gold: 35
+    train_slot: 2
+    heal_slot: 2
+    max_army: 4
+
+  - id: 201
+    type: 2
+    level: 1
+    name: "兵营 Lv.1"
+    hp: 2000
+    build_time: 300
+    cost_food: 100
+    cost_wood: 200
+    cost_stone: 100
+    cost_gold: 0
+    prod_food: 0
+    prod_wood: 0
+    prod_stone: 0
+    prod_gold: 0
+    train_slot: 1
+    heal_slot: 0
+    max_army: 0
+
+  - id: 202
+    type: 2
+    level: 2
+    name: "兵营 Lv.2"
+    hp: 3500
+    build_time: 900
+    cost_food: 300
+    cost_wood: 400
+    cost_stone: 250
+    cost_gold: 50
+    prod_food: 0
+    prod_wood: 0
+    prod_stone: 0
+    prod_gold: 0
+    train_slot: 2
+    heal_slot: 0
+    max_army: 0
+
+  - id: 301
+    type: 3
+    level: 1
+    name: "农场 Lv.1"
+    hp: 1000
+    build_time: 180
+    cost_food: 50
+    cost_wood: 100
+    cost_stone: 50
+    cost_gold: 0
+    prod_food: 200
+    prod_wood: 0
+    prod_stone: 0
+    prod_gold: 0
+    train_slot: 0
+    heal_slot: 0
+    max_army: 0
+
+  - id: 302
+    type: 3
+    level: 2
+    name: "农场 Lv.2"
+    hp: 1800
+    build_time: 480
+    cost_food: 120
+    cost_wood: 220
+    cost_stone: 100
+    cost_gold: 20
+    prod_food: 420
+    prod_wood: 0
+    prod_stone: 0
+    prod_gold: 0
+    train_slot: 0
+    heal_slot: 0
+    max_army: 0
+
+  - id: 401
+    type: 4
+    level: 1
+    name: "伐木场 Lv.1"
+    hp: 1000
+    build_time: 180
+    cost_food: 50
+    cost_wood: 80
+    cost_stone: 50
+    cost_gold: 0
+    prod_food: 0
+    prod_wood: 200
+    prod_stone: 0
+    prod_gold: 0
+    train_slot: 0
+    heal_slot: 0
+    max_army: 0
+
+  - id: 402
+    type: 4
+    level: 2
+    name: "伐木场 Lv.2"
+    hp: 1800
+    build_time: 480
+    cost_food: 120
+    cost_wood: 180
+    cost_stone: 100
+    cost_gold: 20
+    prod_food: 0
+    prod_wood: 420
+    prod_stone: 0
+    prod_gold: 0
+    train_slot: 0
+    heal_slot: 0
+    max_army: 0
+
+  - id: 501
+    type: 5
+    level: 1
+    name: "采石场 Lv.1"
+    hp: 1200
+    build_time: 240
+    cost_food: 80
+    cost_wood: 100
+    cost_stone: 80
+    cost_gold: 0
+    prod_food: 0
+    prod_wood: 0
+    prod_stone: 120
+    prod_gold: 0
+    train_slot: 0
+    heal_slot: 0
+    max_army: 0
+
+  - id: 502
+    type: 5
+    level: 2
+    name: "采石场 Lv.2"
+    hp: 2200
+    build_time: 600
+    cost_food: 180
+    cost_wood: 220
+    cost_stone: 180
+    cost_gold: 30
+    prod_food: 0
+    prod_wood: 0
+    prod_stone: 260
+    prod_gold: 0
+    train_slot: 0
+    heal_slot: 0
+    max_army: 0
+
+  - id: 601
+    type: 6
+    level: 1
+    name: "医院 Lv.1"
+    hp: 1800
+    build_time: 360
+    cost_food: 120
+    cost_wood: 150
+    cost_stone: 120
+    cost_gold: 20
+    prod_food: 0
+    prod_wood: 0
+    prod_stone: 0
+    prod_gold: 0
+    train_slot: 0
+    heal_slot: 1
+    max_army: 0
+
+  - id: 701
+    type: 7
+    level: 1
+    name: "仓库 Lv.1"
+    hp: 2200
+    build_time: 360
+    cost_food: 100
+    cost_wood: 200
+    cost_stone: 150
+    cost_gold: 20
+    prod_food: 0
+    prod_wood: 0
+    prod_stone: 0
+    prod_gold: 50
+    train_slot: 0
+    heal_slot: 0
+    max_army: 0

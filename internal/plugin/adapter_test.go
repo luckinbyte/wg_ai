@@ -74,7 +74,26 @@ func TestDataAdapterGetField(t *testing.T) {
     }
 }
 
- func TestDataAdapterMarkDirty(t *testing.T) {
+func TestDataAdapterSetArray(t *testing.T) {
+    playerData := data.NewPlayerData(1)
+    adapter := NewDataAdapter(1, playerData)
+
+    items := []map[string]any{{"id": 1}}
+    if err := adapter.SetArray("items", &items); err != nil {
+        t.Fatal(err)
+    }
+
+    arr, err := adapter.GetArray("items")
+    if err != nil {
+        t.Fatal(err)
+    }
+    itemsPtr, ok := arr.(*[]map[string]any)
+    if !ok || len(*itemsPtr) != 1 {
+        t.Fatal("set array failed")
+    }
+}
+
+func TestDataAdapterMarkDirty(t *testing.T) {
     playerData := data.NewPlayerData(1)
     playerData.Dirty = false
 

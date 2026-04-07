@@ -25,6 +25,9 @@ type DataAccessor interface {
     // 获取数组字段 (返回指针，可直接修改)
     GetArray(key string) (any, error)
 
+    // 设置数组字段
+    SetArray(key string, value any) error
+
     // 标记脏数据
     MarkDirty()
 }

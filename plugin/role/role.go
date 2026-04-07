@@ -1,6 +1,7 @@
 package main
 
 import (
+    cityplugin "github.com/luckinbyte/wg_ai/plugin/city"
     baseplugin "github.com/luckinbyte/wg_ai/plugin"
 )
 
@@ -30,6 +31,15 @@ func (l *RoleLogic) Handle(ctx *baseplugin.LogicContext, method string, params m
 
 // handleLogin 处理登录
 func (l *RoleLogic) handleLogin(ctx *baseplugin.LogicContext, params map[string]any) (*baseplugin.LogicResult, error) {
+    if cityplugin.HasSceneManager() {
+        if _, err := cityplugin.GetCity(ctx.Data); err != nil {
+            return baseplugin.Error(500, err.Error()), nil
+        }
+        if _, err := cityplugin.InitPlayerCity(ctx.Data, ctx.RID); err != nil {
+            return baseplugin.Error(500, err.Error()), nil
+        }
+    }
+
     name, _ := ctx.Data.GetField("name")
     level, _ := ctx.Data.GetField("level")
     exp, _ := ctx.Data.GetField("exp")
@@ -80,5 +90,7 @@ func (l *RoleLogic) handleUpdateName(ctx *baseplugin.LogicContext, params map[st
     return baseplugin.Success(map[string]any{"name": name}), nil
 }
 
+var roleLogic = &RoleLogic{}
+
 // 导出符号 - 必须命名为 "Role" + "Module"
-var RoleModule baseplugin.LogicModule = &RoleLogic{}
+var RoleModule baseplugin.LogicModule = roleLogic

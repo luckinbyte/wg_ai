@@ -14,6 +14,7 @@ import (
     "github.com/luckinbyte/wg_ai/internal/rpc"
     "github.com/luckinbyte/wg_ai/internal/scene"
     "github.com/luckinbyte/wg_ai/internal/session"
+    cityplugin "github.com/luckinbyte/wg_ai/plugin/city"
 )
 
 type Server struct {
@@ -65,14 +66,21 @@ func (s *Server) Start() error {
     sceneModule := scene.NewModule(s.sceneMgr)
     s.pluginMgr.RegisterModule("scene", sceneModule)
 
-    // 4.2 初始化行军管理器
+    // 4.2 注册城池模块 (内置模块)
+    cityModule, err := cityplugin.NewModule(s.sceneMgr)
+    if err != nil {
+        return err
+    }
+    s.pluginMgr.RegisterModule("city", cityModule)
+
+    // 4.3 初始化行军管理器
     s.marchMgr = march.NewManager(s.sceneMgr)
 
-    // 4.3 注册行军模块 (内置模块)
+    // 4.4 注册行军模块 (内置模块)
     marchModule := march.NewModule(s.marchMgr)
     s.pluginMgr.RegisterModule("march", marchModule)
 
-    // 4.4 启动行军管理器
+    // 4.5 启动行军管理器
     s.marchMgr.Start()
 
     // 5. 创建 Agent Manager

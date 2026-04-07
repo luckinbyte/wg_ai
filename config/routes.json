@@ -28,5 +28,10 @@
     {"msg_id": 5010, "module": "soldier", "method": "complete_heal"},
     {"msg_id": 5011, "module": "soldier", "method": "dismiss"},
     {"msg_id": 5012, "module": "soldier", "method": "configs"},
-    {"msg_id": 5013, "module": "soldier", "method": "stats"}
+    {"msg_id": 5013, "module": "soldier", "method": "stats"},
+    {"msg_id": 7001, "module": "city", "method": "get_info"},
+    {"msg_id": 7002, "module": "city", "method": "upgrade"},
+    {"msg_id": 7003, "module": "city", "method": "cancel_build"},
+    {"msg_id": 7004, "module": "city", "method": "build_queue"},
+    {"msg_id": 7005, "module": "city", "method": "production"}
 ]
