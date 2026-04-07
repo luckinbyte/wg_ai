@@ -31,11 +31,12 @@ type AdminConfig struct {
 }
 
 type ServerConfig struct {
-	ID      int    `mapstructure:"id"`
-	Name    string `mapstructure:"name"`
-	Host    string `mapstructure:"host"`
-	Port    int    `mapstructure:"port"`
-	MaxConn int    `mapstructure:"max_conn"`
+	ID       int    `mapstructure:"id"`
+	Name     string `mapstructure:"name"`
+	Host     string `mapstructure:"host"`
+	Port     int    `mapstructure:"port"`
+	MaxConn  int    `mapstructure:"max_conn"`
+	GRPCPort int    `mapstructure:"grpc_port"`
 }
 
 func (c *ServerConfig) Addr() string {

@@ -22,6 +22,11 @@ func (c *MySQLConfig) DSN() string {
 		c.Username, c.Password, c.Host, c.Port, c.Database)
 }
 
+func (c *MySQLConfig) ServerDSN() string {
+	return fmt.Sprintf("%s:%s@tcp(%s:%d)/?charset=utf8mb4&parseTime=True",
+		c.Username, c.Password, c.Host, c.Port)
+}
+
 type MySQL struct {
 	db *sql.DB
 }
@@ -40,10 +45,26 @@ func NewMySQL(cfg *MySQLConfig) (*MySQL, error) {
 	}
 
 	if err := db.Ping(); err != nil {
+		_ = db.Close()
 		return nil, err
 	}
 
 	return &MySQL{db: db}, nil
+}
+
+func EnsureDatabase(cfg *MySQLConfig) error {
+	serverDB, err := sql.Open("mysql", cfg.ServerDSN())
+	if err != nil {
+		return err
+	}
+	defer serverDB.Close()
+
+	if err := serverDB.Ping(); err != nil {
+		return err
+	}
+
+	_, err = serverDB.Exec(fmt.Sprintf("CREATE DATABASE IF NOT EXISTS `%s` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci", cfg.Database))
+	return err
 }
 
 func (m *MySQL) Close() error {

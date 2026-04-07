@@ -21,6 +21,30 @@ func NewDBService(mysql *MySQL, redis *Redis) *DBService {
 	}
 }
 
+func EnsureTables(mysql *MySQL) error {
+	stmts := []string{
+		`CREATE TABLE IF NOT EXISTS user (
+			uid BIGINT PRIMARY KEY AUTO_INCREMENT,
+			username VARCHAR(255) NOT NULL UNIQUE,
+			password_hash VARCHAR(255) NOT NULL,
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		)`,
+		`CREATE TABLE IF NOT EXISTS role (
+			rid BIGINT PRIMARY KEY,
+			data LONGBLOB NOT NULL,
+			updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+		)`,
+	}
+
+	for _, stmt := range stmts {
+		if _, err := mysql.db.Exec(stmt); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (s *DBService) LoadRole(ctx context.Context, req *ss.LoadRoleRequest) (*ss.LoadRoleResponse, error) {
 	cacheKey := fmt.Sprintf("role:%d", req.Rid)
 
