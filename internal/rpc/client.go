@@ -47,6 +47,10 @@ func (c *Client) ConnectLogin(addr string) error {
 	return nil
 }
 
+func (c *Client) HasDBConnection() bool {
+	return c != nil && c.dbConn != nil && c.dbClient != nil
+}
+
 func (c *Client) Close() {
 	if c.dbConn != nil {
 		c.dbConn.Close()

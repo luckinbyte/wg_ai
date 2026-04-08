@@ -44,3 +44,4 @@ temp/
 
 # Claude Code
 .claude/
+.worktrees/

@@ -6,11 +6,12 @@ import (
 
 // PlayerData 玩家数据容器
 type PlayerData struct {
-	RID    int64          `json:"rid"`     // 角色ID
-	Base   map[string]any `json:"base"`    // 基础字段: name, level, exp, gold...
-		Arrays map[string]any `json:"arrays"`  // 数组字段: items, heroes, tasks...
-		Dirty  bool           `json:"-"`       // 脏标记
-		mutex  sync.RWMutex   `json:"-"`       // 读写锁
+	RID     int64          `json:"rid"`     // 角色ID
+	Base    map[string]any `json:"base"`    // 基础字段: name, level, exp, gold...
+	Arrays  map[string]any `json:"arrays"`  // 数组字段: items, heroes, tasks...
+	Dirty   bool           `json:"-"`       // 脏标记
+	version uint64         `json:"-"`
+	mutex   sync.RWMutex   `json:"-"`       // 读写锁
 }
 
 // NewPlayerData 创建空的玩家数据
@@ -55,7 +56,7 @@ func (p *PlayerData) SetField(key string, value any) {
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 	p.Base[key] = value
-	p.Dirty = true
+	p.markDirtyLocked()
 }
 
 // GetArray 获取数组字段
@@ -70,5 +71,32 @@ func (p *PlayerData) SetArray(key string, value any) {
 	p.mutex.Lock()
 	defer p.mutex.Unlock()
 	p.Arrays[key] = value
+	p.markDirtyLocked()
+}
+
+func (p *PlayerData) MarkDirty() {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+	p.markDirtyLocked()
+}
+
+func (p *PlayerData) SnapshotDirtyVersion() (bool, uint64) {
+	p.mutex.RLock()
+	defer p.mutex.RUnlock()
+	return p.Dirty, p.version
+}
+
+func (p *PlayerData) ClearDirtyIfVersion(version uint64) bool {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
+	if p.version != version {
+		return false
+	}
+	p.Dirty = false
+	return true
+}
+
+func (p *PlayerData) markDirtyLocked() {
 	p.Dirty = true
+	p.version++
 }

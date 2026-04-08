@@ -13,6 +13,7 @@ type DataStore interface {
     SetArray(rid int64, key string, value any) error
     MarkDirty(rid int64)
     GetPlayers(rids []int64) ([]*PlayerData, error)
+    ForEachLoadedPlayer(func(rid int64, p *PlayerData) error) error
 }
 
 // PlayerStore 玩家数据管理器
@@ -96,9 +97,7 @@ func (s *PlayerStore) MarkDirty(rid int64) {
     if err != nil {
         return
     }
-    p.Lock()
-    p.Dirty = true
-    p.Unlock()
+    p.MarkDirty()
 }
 
 // GetPlayers 批量获取玩家数据
@@ -112,4 +111,27 @@ func (s *PlayerStore) GetPlayers(rids []int64) ([]*PlayerData, error) {
         players = append(players, p)
     }
     return players, nil
+}
+
+// ForEachLoadedPlayer 遍历已加载的玩家数据
+func (s *PlayerStore) ForEachLoadedPlayer(fn func(rid int64, p *PlayerData) error) error {
+    s.mutex.RLock()
+    snapshot := make([]struct {
+        rid int64
+        p   *PlayerData
+    }, 0, len(s.players))
+    for rid, p := range s.players {
+        snapshot = append(snapshot, struct {
+            rid int64
+            p   *PlayerData
+        }{rid: rid, p: p})
+    }
+    s.mutex.RUnlock()
+
+    for _, entry := range snapshot {
+        if err := fn(entry.rid, entry.p); err != nil {
+            return err
+        }
+    }
+    return nil
 }
