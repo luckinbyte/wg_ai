@@ -1,12 +1,16 @@
 package game
 
 import (
+    "context"
     "fmt"
+    "log"
     "net/http"
+    "time"
 
     "github.com/luckinbyte/wg_ai/internal/admin"
     "github.com/luckinbyte/wg_ai/internal/agent"
     "github.com/luckinbyte/wg_ai/internal/common/config"
+    "github.com/luckinbyte/wg_ai/internal/common/logger"
     "github.com/luckinbyte/wg_ai/internal/data"
     "github.com/luckinbyte/wg_ai/internal/gate"
     "github.com/luckinbyte/wg_ai/internal/march"
@@ -151,39 +155,102 @@ func (s *Server) startAdminServer() {
 }
 
 func (s *Server) Stop() {
-    // 关闭管理接口
-    if s.adminSrv != nil {
-        s.adminSrv.Close()
-    }
+    s.logLifecycle("shutdown start")
 
-    // 停止文件监听
+    s.logLifecycle("phase 1/8 stop admin server start")
+    if s.adminSrv != nil {
+        if err := s.adminSrv.Close(); err != nil {
+            s.logLifecyclef("phase 1/8 stop admin server error: %v", err)
+        }
+    }
+    s.logLifecycle("phase 1/8 stop admin server done")
+
+    s.logLifecycle("phase 2/8 stop watcher start")
     if s.watcher != nil {
         s.watcher.Stop()
     }
+    s.logLifecycle("phase 2/8 stop watcher done")
 
-    // 停止行军管理器
-    if s.marchMgr != nil {
-        s.marchMgr.Stop()
-    }
-
-    // 关闭 TCP 服务
+    s.logLifecycle("phase 3/8 stop TCP server start")
     if s.tcpServer != nil {
         s.tcpServer.Stop()
     }
+    s.logLifecycle("phase 3/8 stop TCP server done")
 
-    // 关闭 WebSocket 服务
+    s.logLifecycle("phase 4/8 stop WebSocket server start")
     if s.wsServer != nil {
         s.wsServer.Stop()
     }
+    s.logLifecycle("phase 4/8 stop WebSocket server done")
 
-    // 关闭 Agent
+    s.logLifecycle("phase 5/8 stop march manager start")
+    if s.marchMgr != nil {
+        s.marchMgr.Stop()
+    }
+    s.logLifecycle("phase 5/8 stop march manager done")
+
+    s.logLifecycle("phase 6/8 stop agent manager start")
     if s.agentMgr != nil {
         s.agentMgr.Stop()
     }
+    s.logLifecycle("phase 6/8 stop agent manager done")
 
-    // 关闭 RPC
+    s.logLifecycle("phase 7/8 flush loaded players start")
+    s.flushLoadedPlayers()
+    s.logLifecycle("phase 7/8 flush loaded players done")
+
+    s.logLifecycle("phase 8/8 close rpc client start")
     if s.rpcClient != nil {
         s.rpcClient.Close()
     }
+    s.logLifecycle("phase 8/8 close rpc client done")
+    s.logLifecycle("shutdown complete")
+}
+
+func (s *Server) flushLoadedPlayers() {
+    if s.dataStore == nil || s.rpcClient == nil || !s.rpcClient.HasDBConnection() {
+        return
+    }
+
+    err := s.dataStore.ForEachLoadedPlayer(func(rid int64, p *data.PlayerData) error {
+        dirty, version := p.SnapshotDirtyVersion()
+        if !dirty {
+            return nil
+        }
+
+        payload, err := data.SerializePlayer(p)
+        if err != nil {
+            s.logLifecyclef("failed to serialize dirty player rid=%d err=%v", rid, err)
+            return nil
+        }
+
+        ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+        defer cancel()
+
+        if err := s.rpcClient.SaveRole(ctx, rid, payload); err != nil {
+            s.logLifecyclef("failed to save dirty player rid=%d err=%v", rid, err)
+            return nil
+        }
+
+        if !p.ClearDirtyIfVersion(version) {
+            s.logLifecyclef("player changed during flush rid=%d; leaving dirty", rid)
+        }
+        return nil
+    })
+    if err != nil {
+        s.logLifecyclef("failed to iterate loaded players err=%v", err)
+    }
+}
+
+func (s *Server) logLifecycle(msg string) {
+    s.logLifecyclef("%s", msg)
+}
+
+func (s *Server) logLifecyclef(format string, args ...any) {
+    if logger.Log != nil {
+        logger.Log.Infof(format, args...)
+        return
+    }
+    log.Printf(format, args...)
 }
 
