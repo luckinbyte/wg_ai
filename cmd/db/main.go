@@ -64,9 +64,12 @@ func main() {
 	}
 	redis, err := db.NewRedis(redisCfg)
 	if err != nil {
-		logger.Log.Fatalf("Redis init failed: %v", err)
+		logger.Log.Warnf("Redis init failed (running without cache): %v", err)
+		redis = nil
 	}
-	defer redis.Close()
+	if redis != nil {
+		defer redis.Close()
+	}
 
 	grpcPort := getEnvInt("GRPC_PORT", cfg.Server.GRPCPort)
 	addr := fmt.Sprintf(":%d", grpcPort)

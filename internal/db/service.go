@@ -49,21 +49,25 @@ func (s *DBService) LoadRole(ctx context.Context, req *ss.LoadRoleRequest) (*ss.
 	cacheKey := fmt.Sprintf("role:%d", req.Rid)
 
 	// Try Redis first
-	cached, err := s.redis.Get(ctx, cacheKey)
-	if err == nil {
-		return &ss.LoadRoleResponse{Data: cached, Found: true}, nil
+	if s.redis != nil {
+		cached, err := s.redis.Get(ctx, cacheKey)
+		if err == nil {
+			return &ss.LoadRoleResponse{Data: cached, Found: true}, nil
+		}
 	}
 
 	// Query MySQL
 	var data []byte
-	err = s.mysql.db.QueryRowContext(ctx,
+	err := s.mysql.db.QueryRowContext(ctx,
 		"SELECT data FROM role WHERE rid = ?", req.Rid).Scan(&data)
 	if err != nil {
 		return &ss.LoadRoleResponse{Found: false}, nil
 	}
 
 	// Cache it
-	_ = s.redis.Set(ctx, cacheKey, data, 5*time.Minute)
+	if s.redis != nil {
+		_ = s.redis.Set(ctx, cacheKey, data, 5*time.Minute)
+	}
 
 	return &ss.LoadRoleResponse{Data: data, Found: true}, nil
 }
@@ -78,7 +82,9 @@ func (s *DBService) SaveRole(ctx context.Context, req *ss.SaveRoleRequest) (*ss.
 	}
 
 	cacheKey := fmt.Sprintf("role:%d", req.Rid)
-	_ = s.redis.Set(ctx, cacheKey, req.Data, 5*time.Minute)
+	if s.redis != nil {
+		_ = s.redis.Set(ctx, cacheKey, req.Data, 5*time.Minute)
+	}
 
 	return &ss.SaveRoleResponse{Success: true}, nil
 }
