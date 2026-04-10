@@ -50,7 +50,8 @@ func TestMarchType(t *testing.T) {
 
 // TestNewArmy 测试创建军队
 func TestNewArmy(t *testing.T) {
-	army := NewArmy(1, 100, 200, 1000)
+	soldiers := map[int]int{1: 1000}
+	army := NewArmy(1, 100, 200, soldiers)
 
 	if army.ID != 1 {
 		t.Errorf("Expected ID=1, got %d", army.ID)
@@ -61,8 +62,8 @@ func TestNewArmy(t *testing.T) {
 	if army.HeroID != 200 {
 		t.Errorf("Expected HeroID=200, got %d", army.HeroID)
 	}
-	if army.Soldiers != 1000 {
-		t.Errorf("Expected Soldiers=1000, got %d", army.Soldiers)
+	if army.GetTotalSoldiers() != 1000 {
+		t.Errorf("Expected total soldiers=1000, got %d", army.GetTotalSoldiers())
 	}
 	if !army.IsIdle() {
 		t.Error("New army should be idle")
@@ -71,7 +72,7 @@ func TestNewArmy(t *testing.T) {
 
 // TestArmyIsMarching 测试行军状态判断
 func TestArmyIsMarching(t *testing.T) {
-	army := NewArmy(1, 100, 200, 1000)
+	army := NewArmy(1, 100, 200, map[int]int{1: 1000})
 
 	if army.IsMarching() {
 		t.Error("Idle army should not be marching")
@@ -90,7 +91,7 @@ func TestArmyIsMarching(t *testing.T) {
 
 // TestArmyCanMarch 测试是否可以行军
 func TestArmyCanMarch(t *testing.T) {
-	army := NewArmy(1, 100, 200, 1000)
+	army := NewArmy(1, 100, 200, map[int]int{1: 1000})
 
 	if !army.CanMarch() {
 		t.Error("Idle army should be able to march")
@@ -104,7 +105,7 @@ func TestArmyCanMarch(t *testing.T) {
 
 // TestArmyStartMarch 测试开始行军
 func TestArmyStartMarch(t *testing.T) {
-	army := NewArmy(1, 100, 200, 1000)
+	army := NewArmy(1, 100, 200, map[int]int{1: 1000})
 	army.Position = scene.Vector2{X: 0, Y: 0}
 
 	targetPos := scene.Vector2{X: 1000, Y: 0}
@@ -132,7 +133,7 @@ func TestArmyStartMarch(t *testing.T) {
 
 // TestArmyFinishMarch 测试结束行军
 func TestArmyFinishMarch(t *testing.T) {
-	army := NewArmy(1, 100, 200, 1000)
+	army := NewArmy(1, 100, 200, map[int]int{1: 1000})
 	army.Position = scene.Vector2{X: 0, Y: 0}
 
 	targetPos := scene.Vector2{X: 1000, Y: 0}
@@ -154,7 +155,7 @@ func TestArmyFinishMarch(t *testing.T) {
 
 // TestArmyGetProgress 测试获取行军进度
 func TestArmyGetProgress(t *testing.T) {
-	army := NewArmy(1, 100, 200, 1000)
+	army := NewArmy(1, 100, 200, map[int]int{1: 1000})
 
 	// 没有行军数据时进度应为1.0
 	if army.GetProgress() != 1.0 {
@@ -176,7 +177,7 @@ func TestArmyGetProgress(t *testing.T) {
 
 // TestArmyPower 测试战力计算
 func TestArmyCalcPower(t *testing.T) {
-	army := NewArmy(1, 100, 200, 1000)
+	army := NewArmy(1, 100, 200, map[int]int{1: 1000})
 	power := army.CalcPower()
 
 	expected := int64(1000 * 10) // 士兵数 * 10
@@ -187,7 +188,7 @@ func TestArmyCalcPower(t *testing.T) {
 
 // TestArmyLoadCapacity 测试负重计算
 func TestArmyCalcLoadCapacity(t *testing.T) {
-	army := NewArmy(1, 100, 200, 1000)
+	army := NewArmy(1, 100, 200, map[int]int{1: 1000})
 	capacity := army.CalcLoadCapacity()
 
 	expected := int64(1000 * 100) // 士兵数 * 100
@@ -198,7 +199,7 @@ func TestArmyCalcLoadCapacity(t *testing.T) {
 
 // TestArmyLoad 测试负重操作
 func TestArmyLoad(t *testing.T) {
-	army := NewArmy(1, 100, 200, 100)
+	army := NewArmy(1, 100, 200, map[int]int{1: 100})
 
 	// 添加负重
 	army.AddLoad(scene.ResourceFood, 1000)
@@ -234,7 +235,7 @@ func TestArmyLoad(t *testing.T) {
 
 // TestArmyCollect 测试采集
 func TestArmyCollect(t *testing.T) {
-	army := NewArmy(1, 100, 200, 1000)
+	army := NewArmy(1, 100, 200, map[int]int{1: 1000})
 
 	// 先设置行军数据
 	army.Position = scene.Vector2{X: 0, Y: 0}
@@ -296,7 +297,7 @@ func TestManagerCreateArmy(t *testing.T) {
 	mgr := NewManager(sceneMgr)
 
 	// 创建军队
-	army, err := mgr.CreateArmy(100, 200, 1000, scene.Vector2{X: 100, Y: 100}, 1)
+	army, err := mgr.CreateArmy(100, 200, map[int]int{1: 1000}, scene.Vector2{X: 100, Y: 100}, 1)
 	if err != nil {
 		t.Fatalf("Failed to create army: %v", err)
 	}
@@ -325,13 +326,13 @@ func TestManagerCreateArmy(t *testing.T) {
 
 	// 测试军队数量上限
 	for i := 0; i < 5; i++ {
-		_, err = mgr.CreateArmy(100, 200, 1000, scene.Vector2{X: 100, Y: 100}, 1)
+		_, err = mgr.CreateArmy(100, 200, map[int]int{1: 1000}, scene.Vector2{X: 100, Y: 100}, 1)
 		if err != nil {
 			break
 		}
 	}
 	// 第6支军队应该失败
-	_, err = mgr.CreateArmy(100, 200, 1000, scene.Vector2{X: 100, Y: 100}, 1)
+	_, err = mgr.CreateArmy(100, 200, map[int]int{1: 1000}, scene.Vector2{X: 100, Y: 100}, 1)
 	if err == nil {
 		t.Error("Should fail to create 6th army")
 	}
@@ -350,8 +351,8 @@ func TestManagerStats(t *testing.T) {
 	mgr := NewManager(sceneMgr)
 
 	// 创建一些军队
-	mgr.CreateArmy(100, 200, 1000, scene.Vector2{X: 100, Y: 100}, 1)
-	mgr.CreateArmy(101, 200, 1000, scene.Vector2{X: 100, Y: 100}, 1)
+	mgr.CreateArmy(100, 200, map[int]int{1: 1000}, scene.Vector2{X: 100, Y: 100}, 1)
+	mgr.CreateArmy(101, 200, map[int]int{1: 1000}, scene.Vector2{X: 100, Y: 100}, 1)
 
 	stats := mgr.GetStats()
 	if stats["army_count"].(int) != 2 {
