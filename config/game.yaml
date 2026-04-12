@@ -37,3 +37,8 @@ database:
 log:
   level: "info"
   output: "./logs/game.log"
+
+plugin:
+  route_file: "config/routes.json"
+  watch: false
+  dir: "./plugins"

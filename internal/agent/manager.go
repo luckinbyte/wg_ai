@@ -38,3 +38,9 @@ func (m *Manager) Stop() {
 		a.Stop()
 	}
 }
+
+func (m *Manager) SetFallback(fn HandlerFunc) {
+	for _, a := range m.agents {
+		a.SetFallback(fn)
+	}
+}

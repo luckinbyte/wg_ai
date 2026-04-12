@@ -1,6 +1,7 @@
 package gate
 
 import (
+	"log"
 	"net/http"
 	"sync"
 	"time"
@@ -14,11 +15,10 @@ var upgrader = websocket.Upgrader{
 	ReadBufferSize:  4096,
 	WriteBufferSize: 4096,
 	CheckOrigin: func(r *http.Request) bool {
-		return true // 允许所有来源 (生产环境应限制)
+		return true
 	},
 }
 
-// WSServer WebSocket服务器
 type WSServer struct {
 	addr       string
 	server     *http.Server
@@ -28,7 +28,6 @@ type WSServer struct {
 	agentMgr   *agent.Manager
 }
 
-// NewWSServer 创建WebSocket服务器
 func NewWSServer(addr string, sessionMgr *session.Manager, agentMgr *agent.Manager) *WSServer {
 	return &WSServer{
 		addr:       addr,
@@ -38,7 +37,6 @@ func NewWSServer(addr string, sessionMgr *session.Manager, agentMgr *agent.Manag
 	}
 }
 
-// Start 启动服务器
 func (s *WSServer) Start() error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/ws", s.handleWebSocket)
@@ -49,15 +47,15 @@ func (s *WSServer) Start() error {
 	}
 
 	go func() {
+		log.Printf("WebSocket server starting on %s", s.addr)
 		if err := s.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			// 服务器错误
+			log.Printf("WebSocket server error: %v", err)
 		}
 	}()
 
 	return nil
 }
 
-// Stop 停止服务器
 func (s *WSServer) Stop() {
 	close(s.stopCh)
 	if s.server != nil {
@@ -66,7 +64,6 @@ func (s *WSServer) Stop() {
 	s.wg.Wait()
 }
 
-// Addr 返回监听地址
 func (s *WSServer) Addr() string {
 	if s.server != nil {
 		return s.server.Addr
@@ -74,61 +71,57 @@ func (s *WSServer) Addr() string {
 	return ""
 }
 
-// handleWebSocket 处理WebSocket连接
 func (s *WSServer) handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
+		log.Printf("WebSocket upgrade failed: %v", err)
 		return
 	}
 
+	log.Printf("WebSocket connection established from %s", conn.RemoteAddr())
 	s.wg.Add(1)
 	go s.handleConnection(conn)
 }
 
-// handleConnection 处理连接
 func (s *WSServer) handleConnection(conn *websocket.Conn) {
 	defer s.wg.Done()
 	defer conn.Close()
 
 	wsConn := NewWSConnection(conn)
 
-	// 设置读超时
 	conn.SetReadDeadline(time.Now().Add(30 * time.Second))
 
-	// 读取握手消息
 	msgType, data, err := wsConn.ReadMessage()
 	if err != nil {
+		log.Printf("WebSocket read handshake failed: %v", err)
 		return
 	}
 	if msgType != MsgTypeHandshake {
+		log.Printf("WebSocket invalid handshake message type: %d", msgType)
 		return
 	}
 
-	// TODO: 解析并验证token
-	// 暂时使用 UID=1 测试
 	_ = data
 
-	// 创建会话
-	sess := session.New(1, 0, nil) // UID=1
-	sess.SetWSConn(wsConn)         // 设置WS连接
+	sess := session.New(1, 0, nil)
+	sess.SetWSConn(wsConn)
 
-	// 注册到会话管理器
 	sess = s.sessionMgr.Create(1, nil)
 	sess.SetWSConn(wsConn)
 
-	// 绑定到Agent
 	ag := s.agentMgr.Assign()
 	ag.BindSession(sess)
 
-	// 发送握手响应
-	resp := []byte{0, 0, 0, 0} // code = 0 (成功)
+	resp := []byte{0, 0, 0, 0}
 	wsConn.WriteMessage(MsgTypeResponse, resp)
 
-	// 消息循环
+	log.Printf("WebSocket handshake completed for UID=1")
+
 	for {
 		conn.SetReadDeadline(time.Now().Add(30 * time.Second))
 		msgType, data, err := wsConn.ReadMessage()
 		if err != nil {
+			log.Printf("WebSocket read error: %v", err)
 			break
 		}
 
@@ -141,25 +134,20 @@ func (s *WSServer) handleConnection(conn *websocket.Conn) {
 		}
 	}
 
-	// 清理
 	ag.UnbindSession(sess.RID)
 	s.sessionMgr.Remove(sess.RID)
 }
 
-// WSConnection WebSocket连接包装
 type WSConnection struct {
 	conn  *websocket.Conn
 	mutex sync.Mutex
 }
 
-// NewWSConnection 创建WS连接
 func NewWSConnection(conn *websocket.Conn) *WSConnection {
 	return &WSConnection{conn: conn}
 }
 
-// ReadMessage 读取消息
 func (c *WSConnection) ReadMessage() (msgType byte, payload []byte, err error) {
-	// WebSocket读取二进制消息
 	_, data, err := c.conn.ReadMessage()
 	if err != nil {
 		return 0, nil, err
@@ -169,18 +157,15 @@ func (c *WSConnection) ReadMessage() (msgType byte, payload []byte, err error) {
 		return 0, nil, ErrInvalidMessage
 	}
 
-	// 解析: [MsgType(1B)][Payload]
 	msgType = data[0]
 	payload = data[1:]
 	return msgType, payload, nil
 }
 
-// WriteMessage 写入消息
 func (c *WSConnection) WriteMessage(msgType byte, payload []byte) error {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
-	// 封装: [MsgType(1B)][Payload]
 	data := make([]byte, 1+len(payload))
 	data[0] = msgType
 	copy(data[1:], payload)
@@ -188,7 +173,6 @@ func (c *WSConnection) WriteMessage(msgType byte, payload []byte) error {
 	return c.conn.WriteMessage(websocket.BinaryMessage, data)
 }
 
-// Send 发送数据 (实现session.Conn接口)
 func (c *WSConnection) Send(data []byte) error {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
@@ -196,12 +180,10 @@ func (c *WSConnection) Send(data []byte) error {
 	return c.conn.WriteMessage(websocket.BinaryMessage, data)
 }
 
-// Close 关闭连接
 func (c *WSConnection) Close() error {
 	return c.conn.Close()
 }
 
-// RemoteAddr 远程地址
 func (c *WSConnection) RemoteAddr() string {
 	return c.conn.RemoteAddr().String()
 }

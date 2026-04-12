@@ -20,6 +20,7 @@ type Agent struct {
 	mutex      sync.RWMutex
 	stopCh     chan struct{}
 	dispatcher *Dispatcher
+	fallback   HandlerFunc
 }
 
 func New(id, queueSize int) *Agent {
@@ -32,6 +33,10 @@ func New(id, queueSize int) *Agent {
 	}
 	RegisterDefaultHandlers(a)
 	return a
+}
+
+func (a *Agent) SetFallback(fn HandlerFunc) {
+	a.fallback = fn
 }
 
 func (a *Agent) Push(msg *Message) {
