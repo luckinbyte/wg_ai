@@ -1,7 +1,9 @@
 package plugin
 
 import (
+    "fmt"
     goplugin "plugin"
+    "strings"
     "sync"
 
     baseplugin "github.com/luckinbyte/wg_ai/plugin"
@@ -58,7 +60,7 @@ func (m *Manager) LoadPlugin(moduleName, path string) error {
     }
 
     // 2. 查找导出符号 (如 RoleModule, ItemModule, SoldierModule)
-    symName := moduleName + "Module"
+    symName := strings.Title(moduleName) + "Module"
     sym, err := p.Lookup(symName)
     if err != nil {
         return err
@@ -95,6 +97,17 @@ func (m *Manager) GetModule(name string) baseplugin.LogicModule {
     m.mutex.RLock()
     defer m.mutex.RUnlock()
     return m.modules[name]
+}
+
+// GetPlugin 获取已加载的 .so 插件
+func (m *Manager) GetPlugin(name string) (*goplugin.Plugin, error) {
+    m.mutex.RLock()
+    defer m.mutex.RUnlock()
+    p, ok := m.plugins[name]
+    if !ok {
+        return nil, fmt.Errorf("plugin %s not found", name)
+    }
+    return p, nil
 }
 
 // ListModules 列出所有已加载模块

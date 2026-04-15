@@ -89,6 +89,17 @@ type LogicModule interface {
     Handle(ctx *LogicContext, method string, params map[string]any) (*LogicResult, error)
 }
 
+// ============ 士兵消费者接口 (供行军模块与士兵插件解耦) ============
+
+// SoldierConsumer 士兵消费者接口
+type SoldierConsumer interface {
+	HasEnoughSoldiers(data DataAccessor, required map[int]int) bool
+	SubSoldiers(data DataAccessor, soldierID, count int) error
+	AddSoldiers(data DataAccessor, soldierID, count int) error
+	AddWounded(data DataAccessor, soldierID, count int) error
+	GetSoldierCount(data DataAccessor, soldierID int) (int, error)
+}
+
 // ============ 辅助函数 ============
 
 // Success 创建成功结果

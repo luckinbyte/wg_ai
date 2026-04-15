@@ -1,0 +1,16 @@
+{
+  "name": "scripts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test:login": "node test_login_city.mjs",
+    "test:gameplay": "node test_gameplay.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ws": "^8.20.0"
+  }
+}

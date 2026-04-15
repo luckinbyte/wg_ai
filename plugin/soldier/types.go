@@ -1,4 +1,4 @@
-package main
+package soldier
 
 // SoldierType 兵种类型
 type SoldierType int

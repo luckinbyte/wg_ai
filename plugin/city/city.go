@@ -141,11 +141,11 @@ func InitPlayerCity(data baseplugin.DataAccessor, rid int64) (*CityData, error) 
 		_ = LoadBuildingConfig("./config/building.yaml")
 	}
 	mgr := NewManager(globalSceneMgr)
-	x, y := defaultCityPosition(rid)
+	x, y := DefaultCityPosition(rid)
 	return mgr.InitCity(data, x, y)
 }
 
-func defaultCityPosition(rid int64) (float64, float64) {
+func DefaultCityPosition(rid int64) (float64, float64) {
 	baseX := float64(100 + (rid%100)*10)
 	baseY := float64(100 + ((rid/100)%100)*10)
 	return baseX, baseY

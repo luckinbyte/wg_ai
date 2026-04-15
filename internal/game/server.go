@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/luckinbyte/wg_ai/internal/admin"
@@ -21,6 +23,7 @@ import (
 	"github.com/luckinbyte/wg_ai/internal/session"
 	baseplugin "github.com/luckinbyte/wg_ai/plugin"
 	cityplugin "github.com/luckinbyte/wg_ai/plugin/city"
+	soldierplugin "github.com/luckinbyte/wg_ai/plugin/soldier"
 )
 
 type Server struct {
@@ -82,6 +85,22 @@ func (s *Server) Start() error {
 	// 4.4.1 注册角色模块 (内置模块)
 	roleModule := &roleModule{}
 	s.pluginMgr.RegisterModule("role", roleModule)
+
+	// 4.4.2 注册士兵模块 (内置模块)
+	soldierModule := soldierplugin.GetSoldierModule()
+	s.pluginMgr.RegisterModule("soldier", soldierModule)
+
+	// 4.4.3 设置行军模块的士兵消费者
+	soldierMgr := soldierplugin.GetSoldierManager()
+	if soldierMgr != nil {
+		s.marchMgr.SetSoldierConsumer(soldierMgr)
+		log.Printf("[Init] soldier consumer registered")
+	}
+
+	// 4.4.4 扫描并加载 plugins/ 目录下的 .so 插件 (热更用)
+	if err := s.loadPlugins(s.config.Plugin.Dir); err != nil {
+		log.Printf("[Init] plugin scan warning: %v", err)
+	}
 
 	// 4.5 启动行军管理器
 	s.marchMgr.Start()
@@ -422,4 +441,25 @@ func (l *roleModule) handleUpdateName(ctx *baseplugin.LogicContext, params map[s
 	}
 
 	return baseplugin.Success(map[string]any{"name": name}), nil
+}
+
+// loadPlugins 扫描插件目录，加载所有已有的 .so 文件
+func (s *Server) loadPlugins(pluginDir string) error {
+	entries, err := os.ReadDir(pluginDir)
+	if err != nil {
+		return fmt.Errorf("read plugin dir %s: %w", pluginDir, err)
+	}
+	for _, entry := range entries {
+		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".so") {
+			continue
+		}
+		name := strings.TrimSuffix(entry.Name(), ".so")
+		soPath := pluginDir + "/" + entry.Name()
+		if err := s.pluginMgr.LoadPlugin(name, soPath); err != nil {
+			log.Printf("[Init] plugin %s load failed: %v", name, err)
+		} else {
+			log.Printf("[Init] plugin %s loaded from %s", name, soPath)
+		}
+	}
+	return nil
 }

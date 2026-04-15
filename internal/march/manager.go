@@ -8,6 +8,7 @@ import (
 
 	"github.com/luckinbyte/wg_ai/internal/battle"
 	"github.com/luckinbyte/wg_ai/internal/scene"
+	"github.com/luckinbyte/wg_ai/plugin/city"
 )
 
 // 全局军队ID生成器
@@ -293,8 +294,8 @@ func (m *Manager) CancelMarch(armyID int64) error {
 	m.walker.RemoveArmy(armyID)
 
 	// 开始返回行军
-	// TODO: 获取玩家城池位置
-	returnPos := scene.Vector2{X: 100, Y: 100} // 临时: 固定返回点
+	x, y := city.DefaultCityPosition(army.OwnerID)
+	returnPos := scene.Vector2{X: x, Y: y}
 	path := []scene.Vector2{army.Position, returnPos}
 	speed := m.calcMarchSpeed(army)
 

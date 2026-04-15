@@ -1,4 +1,4 @@
-package main
+package soldier
 
 import (
 	"encoding/json"
@@ -171,6 +171,7 @@ func (m *Manager) AddSoldiers(data baseplugin.DataAccessor, soldierID, count int
 			Count: count,
 		}
 	}
+	data.SetArray("soldiers", soldiers)
 	data.MarkDirty()
 	return nil
 }
@@ -194,6 +195,7 @@ func (m *Manager) SubSoldiers(data baseplugin.DataAccessor, soldierID, count int
 	if s.Count <= 0 && s.Wounded <= 0 {
 		delete(soldiers, soldierID)
 	}
+	data.SetArray("soldiers", soldiers)
 	data.MarkDirty()
 	return nil
 }
@@ -232,6 +234,7 @@ func (m *Manager) AddWounded(data baseplugin.DataAccessor, soldierID, count int)
 			Wounded: count,
 		}
 	}
+	data.SetArray("soldiers", soldiers)
 	data.MarkDirty()
 	return nil
 }
@@ -255,6 +258,7 @@ func (m *Manager) SubWounded(data baseplugin.DataAccessor, soldierID, count int)
 	if s.Count <= 0 && s.Wounded <= 0 {
 		delete(soldiers, soldierID)
 	}
+	data.SetArray("soldiers", soldiers)
 	data.MarkDirty()
 	return nil
 }

@@ -1,4 +1,4 @@
-package main
+package soldier
 
 import (
 	"fmt"
@@ -446,6 +446,11 @@ func GetSoldierManager() *Manager {
 		globalMgr = NewManager()
 	}
 	return globalMgr
+}
+
+// GetSoldierConsumer 获取士兵消费者 (供行军模块通过 .so Lookup 调用)
+func GetSoldierConsumer() baseplugin.SoldierConsumer {
+	return GetSoldierManager()
 }
 
 // StartManager 启动管理器 (由服务器调用)
