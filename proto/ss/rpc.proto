@@ -32,6 +32,7 @@ service DBService {
     rpc SaveRole(SaveRoleRequest) returns (SaveRoleResponse);
     rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
     rpc GetUser(GetUserRequest) returns (GetUserResponse);
+    rpc LoadAllCities(LoadAllCitiesRequest) returns (stream CityDataMsg);
 }
 
 message LoadRoleRequest {
@@ -69,4 +70,14 @@ message GetUserResponse {
     int64 uid = 1;
     string password_hash = 2;
     bool found = 3;
+}
+
+message LoadAllCitiesRequest {}
+
+message CityDataMsg {
+    int64 rid = 1;
+    int64 city_id = 2;
+    double pos_x = 3;
+    double pos_y = 4;
+    bytes buildings = 5; // JSON encoded map[int]*BuildingData
 }

@@ -182,6 +182,9 @@ func (s *Server) Start() error {
 		return err
 	}
 
+	// 6.1 从数据库加载所有玩家城池到大地图
+	s.loadCitiesFromDB()
+
 	// 7. 启动 TCP 服务
 	addr := s.config.Server.Addr()
 	s.tcpServer = gate.NewTCPServer(addr, s.sessionMgr, s.agentMgr)
@@ -462,4 +465,68 @@ func (s *Server) loadPlugins(pluginDir string) error {
 		}
 	}
 	return nil
+}
+
+// loadCitiesFromDB 启动时从数据库加载所有玩家城池，生成到大地图上
+func (s *Server) loadCitiesFromDB() {
+	if !s.rpcClient.HasDBConnection() {
+		log.Printf("[Init] no DB connection, skip city loading")
+		return
+	}
+	if s.sceneMgr == nil {
+		return
+	}
+
+	sc := s.sceneMgr.GetScene(1)
+	if sc == nil {
+		sc = s.sceneMgr.CreateScene(scene.SceneConfig{ID: 1, Width: 1000, Height: 1000, GridSize: 50})
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	// 重试连接 db 服务
+	var cities []rpc.CityInfo
+	var err error
+	for i := 0; i < 10; i++ {
+		cities, err = s.rpcClient.LoadAllCities(ctx)
+		if err == nil {
+			break
+		}
+		log.Printf("[Init] load cities attempt %d failed: %v", i+1, err)
+		time.Sleep(time.Second)
+	}
+	if err != nil {
+		log.Printf("[Init] load cities from DB failed: %v", err)
+		return
+	}
+
+	for _, c := range cities {
+		// 反序列化 buildings
+		var buildings map[int]struct {
+			Type     int `json:"type"`
+			Level    int `json:"level"`
+			HP       int64 `json:"hp"`
+			EntityID int64 `json:"entity_id"`
+		}
+		if err := json.Unmarshal(c.Buildings, &buildings); err != nil {
+			continue
+		}
+
+		pos := scene.Vector2{X: c.PosX, Y: c.PosY}
+		for _, b := range buildings {
+			cfg := cityplugin.GetBuildingConfigByType(b.Type, b.Level)
+			if cfg == nil {
+				continue
+			}
+			entity := sc.GetObjectManager().SpawnBuilding(pos, cfg.ID, c.RID)
+			objData := entity.GetObjectData()
+			if objData != nil {
+				objData.Level = b.Level
+			}
+			entity.SetData("building_type", b.Type)
+			entity.SetData("building_level", b.Level)
+		}
+	}
+	log.Printf("[Init] loaded %d player cities onto map", len(cities))
 }

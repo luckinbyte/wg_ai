@@ -39,6 +39,8 @@ func (m *Manager) InitCity(data baseplugin.DataAccessor, x, y float64) (*CityDat
 		return nil, err
 	}
 	if city != nil {
+		// 城池数据已存在，重新将建筑实体 Spawn 回大地图
+		m.spawnCityToScene(city, data)
 		return city, nil
 	}
 	if m.sceneMgr == nil {
@@ -83,6 +85,36 @@ func (m *Manager) InitCity(data baseplugin.DataAccessor, x, y float64) (*CityDat
 
 	m.ensureDefaultResources(data)
 	return city, nil
+}
+
+// spawnCityToScene 将已有城池的建筑实体重新生成到大地图上
+func (m *Manager) spawnCityToScene(city *CityData, data baseplugin.DataAccessor) {
+	if m.sceneMgr == nil {
+		return
+	}
+	s := m.sceneMgr.GetScene(1)
+	if s == nil {
+		return
+	}
+	rid := getRIDFromData(data)
+	pos := scene.Vector2{X: city.Position.X, Y: city.Position.Y}
+
+	for _, b := range city.Buildings {
+		cfg := GetBuildingConfigByType(b.Type, b.Level)
+		if cfg == nil {
+			continue
+		}
+		entity := s.GetObjectManager().SpawnBuilding(pos, cfg.ID, rid)
+		objData := entity.GetObjectData()
+		if objData != nil {
+			objData.Level = b.Level
+		}
+		entity.SetData("building_type", b.Type)
+		entity.SetData("building_level", b.Level)
+		// 更新 EntityID 以保持一致
+		b.EntityID = entity.ID
+	}
+	city.CityID = city.Buildings[int(BuildingTypeCastle)].EntityID
 }
 
 func (m *Manager) UpgradeBuilding(data baseplugin.DataAccessor, buildingType int) (*BuildQueueItem, error) {

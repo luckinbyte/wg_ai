@@ -107,3 +107,34 @@ func (c *Client) NotifyLogin(ctx context.Context, uid int64, token string) (bool
 	}
 	return resp.Success, nil
 }
+
+// CityInfo 启动时从 db 加载的城池摘要
+type CityInfo struct {
+	RID       int64
+	CityID    int64
+	PosX      float64
+	PosY      float64
+	Buildings []byte
+}
+
+func (c *Client) LoadAllCities(ctx context.Context) ([]CityInfo, error) {
+	stream, err := c.dbClient.LoadAllCities(ctx, &ss.LoadAllCitiesRequest{})
+	if err != nil {
+		return nil, err
+	}
+	var cities []CityInfo
+	for {
+		msg, err := stream.Recv()
+		if err != nil {
+			break
+		}
+		cities = append(cities, CityInfo{
+			RID:       msg.Rid,
+			CityID:    msg.CityId,
+			PosX:      msg.PosX,
+			PosY:      msg.PosY,
+			Buildings: msg.Buildings,
+		})
+	}
+	return cities, nil
+}

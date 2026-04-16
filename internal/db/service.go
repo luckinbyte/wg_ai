@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -111,4 +112,54 @@ func (s *DBService) GetUser(ctx context.Context, req *ss.GetUserRequest) (*ss.Ge
 		return &ss.GetUserResponse{Found: false}, nil
 	}
 	return &ss.GetUserResponse{Uid: uid, PasswordHash: passwordHash, Found: true}, nil
+}
+
+func (s *DBService) LoadAllCities(req *ss.LoadAllCitiesRequest, stream ss.DBService_LoadAllCitiesServer) error {
+	rows, err := s.mysql.db.QueryContext(stream.Context(),
+		"SELECT rid, data FROM role")
+	if err != nil {
+		return fmt.Errorf("query roles: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var rid int64
+		var data []byte
+		if err := rows.Scan(&rid, &data); err != nil {
+			continue
+		}
+
+		// 解析序列化的玩家数据，提取 city
+		var raw struct {
+			Arrays struct {
+				City json.RawMessage `json:"city"`
+			} `json:"arrays"`
+		}
+		if err := json.Unmarshal(data, &raw); err != nil || raw.Arrays.City == nil {
+			continue
+		}
+
+		var city struct {
+			Position struct {
+				X float64 `json:"x"`
+				Y float64 `json:"y"`
+			} `json:"position"`
+			CityID    int64           `json:"city_id"`
+			Buildings json.RawMessage `json:"buildings"`
+		}
+		if err := json.Unmarshal(raw.Arrays.City, &city); err != nil {
+			continue
+		}
+
+		if err := stream.Send(&ss.CityDataMsg{
+			Rid:       rid,
+			CityId:    city.CityID,
+			PosX:      city.Position.X,
+			PosY:      city.Position.Y,
+			Buildings: city.Buildings,
+		}); err != nil {
+			return err
+		}
+	}
+	return nil
 }
