@@ -185,6 +185,38 @@ func (s *Server) Start() error {
 	// 6.1 从数据库加载所有玩家城池到大地图
 	s.loadCitiesFromDB()
 
+	// 6.2 启动场景刷新器 (生成资源点和怪物)
+	if sc := s.sceneMgr.GetScene(1); sc != nil {
+		sc.StartSpawner()
+		log.Printf("[Init] scene 1 spawner started")
+	}
+
+	// 6.3 设置行军资源入账回调
+	s.marchMgr.SetResourceAdder(func(rid int64, food, wood, stone, gold int64) error {
+		playerData, err := s.dataStore.GetPlayer(rid)
+		if err != nil || playerData == nil {
+			return fmt.Errorf("player %d not found: %v", rid, err)
+		}
+		if food > 0 {
+			cur := playerData.GetField("food")
+			playerData.SetField("food", toFloat64(cur)+float64(food))
+		}
+		if wood > 0 {
+			cur := playerData.GetField("wood")
+			playerData.SetField("wood", toFloat64(cur)+float64(wood))
+		}
+		if stone > 0 {
+			cur := playerData.GetField("stone")
+			playerData.SetField("stone", toFloat64(cur)+float64(stone))
+		}
+		if gold > 0 {
+			cur := playerData.GetField("gold")
+			playerData.SetField("gold", toFloat64(cur)+float64(gold))
+		}
+		playerData.MarkDirty()
+		return nil
+	})
+
 	// 7. 启动 TCP 服务
 	addr := s.config.Server.Addr()
 	s.tcpServer = gate.NewTCPServer(addr, s.sessionMgr, s.agentMgr)
@@ -421,6 +453,9 @@ func (l *roleModule) handleGetInfo(ctx *baseplugin.LogicContext, params map[stri
 	exp, _ := ctx.Data.GetField("exp")
 	gold, _ := ctx.Data.GetField("gold")
 	vip, _ := ctx.Data.GetField("vip")
+	food, _ := ctx.Data.GetField("food")
+	wood, _ := ctx.Data.GetField("wood")
+	stone, _ := ctx.Data.GetField("stone")
 
 	return baseplugin.Success(map[string]any{
 		"rid":   ctx.RID,
@@ -429,6 +464,9 @@ func (l *roleModule) handleGetInfo(ctx *baseplugin.LogicContext, params map[stri
 		"exp":   exp,
 		"gold":  gold,
 		"vip":   vip,
+		"food":  food,
+		"wood":  wood,
+		"stone": stone,
 	}), nil
 }
 
@@ -529,4 +567,21 @@ func (s *Server) loadCitiesFromDB() {
 		}
 	}
 	log.Printf("[Init] loaded %d player cities onto map", len(cities))
+}
+
+// toFloat64 将 any 转换为 float64
+func toFloat64(v any) float64 {
+	if v == nil {
+		return 0
+	}
+	switch val := v.(type) {
+	case float64:
+		return val
+	case int:
+		return float64(val)
+	case int64:
+		return float64(val)
+	default:
+		return 0
+	}
 }

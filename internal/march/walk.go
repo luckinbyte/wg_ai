@@ -43,7 +43,7 @@ func (w *WalkSimulator) Stop() {
 	w.mutex.Lock()
 	defer w.mutex.Unlock()
 
-	if !w.running {
+	if w.running {
 		return
 	}
 
@@ -78,6 +78,7 @@ func (w *WalkSimulator) tickLoop() {
 
 // tick 每帧更新
 func (w *WalkSimulator) tick() {
+	// 更新行军中的军队
 	armies := w.mgr.GetMarchingArmies()
 
 	for _, army := range armies {
@@ -87,9 +88,21 @@ func (w *WalkSimulator) tick() {
 
 		w.updateArmyPosition(army)
 
+		// 同步场景实体位置
+		w.mgr.moveArmyEntity(army)
+
 		// 检查是否到达
 		if w.checkArrival(army) {
 			w.mgr.OnArmyArrival(army)
+		}
+	}
+
+	// 检查采集完成的军队
+	collectingArmies := w.mgr.GetCollectingArmies()
+	now := time.Now().UnixMilli()
+	for _, army := range collectingArmies {
+		if army.March != nil && army.March.CollectEndTime > 0 && now >= army.March.CollectEndTime {
+			w.mgr.OnCollectComplete(army)
 		}
 	}
 }

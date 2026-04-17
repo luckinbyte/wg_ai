@@ -2,6 +2,7 @@ package march
 
 import (
 	"fmt"
+	"log"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -19,27 +20,33 @@ func GenerateArmyID() int64 {
 	return atomic.AddInt64(&globalArmyID, 1)
 }
 
+// ResourceAdder 资源入账回调函数类型
+type ResourceAdder func(rid int64, food, wood, stone, gold int64) error
+
 // Manager 行军管理器
 type Manager struct {
 	armies         map[int64]*Army   // armyID -> Army
 	playerArmies   map[int64][]int64 // playerID -> []armyID
 	marchingArmies map[int64]*Army   // 正在行军的军队
+	collectingArmies map[int64]*Army // 正在采集的军队
 	mutex          sync.RWMutex
 
 	sceneMgr       *scene.Manager
 	walker         *WalkSimulator
 	battleEng      *battle.Engine
 	soldierConsumer SoldierConsumer  // 士兵消费者接口
+	resourceAdder  ResourceAdder    // 资源入账回调
 }
 
 // NewManager 创建行军管理器
 func NewManager(sceneMgr *scene.Manager) *Manager {
 	m := &Manager{
-		armies:         make(map[int64]*Army),
-		playerArmies:   make(map[int64][]int64),
-		marchingArmies: make(map[int64]*Army),
-		sceneMgr:       sceneMgr,
-		battleEng:      battle.NewEngine(),
+		armies:           make(map[int64]*Army),
+		playerArmies:     make(map[int64][]int64),
+		marchingArmies:   make(map[int64]*Army),
+		collectingArmies: make(map[int64]*Army),
+		sceneMgr:         sceneMgr,
+		battleEng:        battle.NewEngine(),
 	}
 
 	// 创建移动模拟器
@@ -53,6 +60,13 @@ func (m *Manager) SetSoldierConsumer(consumer SoldierConsumer) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	m.soldierConsumer = consumer
+}
+
+// SetResourceAdder 设置资源入账回调
+func (m *Manager) SetResourceAdder(adder ResourceAdder) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	m.resourceAdder = adder
 }
 
 // Start 启动管理器
@@ -134,6 +148,9 @@ func (m *Manager) CreateArmyWithData(data DataAccessor, ownerID, heroID int64, s
 	m.armies[id] = army
 	m.playerArmies[ownerID] = append(m.playerArmies[ownerID], id)
 
+	// 在场景中创建军队实体
+	m.spawnArmyEntity(army)
+
 	return army, nil
 }
 
@@ -154,6 +171,9 @@ func (m *Manager) DeleteArmy(armyID int64) error {
 
 	// 从玩家军队列表移除
 	m.removeFromPlayerArmies(army.OwnerID, armyID)
+
+	// 移除场景实体
+	m.removeArmyEntity(army)
 
 	// 删除军队
 	delete(m.armies, armyID)
@@ -188,14 +208,17 @@ func (m *Manager) DeleteArmyWithData(data DataAccessor, armyID int64) error {
 	}
 
 	// 从玩家军队列表移除
-	m.removeFromPlayerArmies(army.OwnerID, armyID)
+		m.removeFromPlayerArmies(army.OwnerID, armyID)
 
-	// 删除军队
-	delete(m.armies, armyID)
-	delete(m.marchingArmies, armyID)
+		// 移除场景实体
+		m.removeArmyEntity(army)
 
-	return nil
-}
+		// 删除军队
+		delete(m.armies, armyID)
+		delete(m.marchingArmies, armyID)
+
+		return nil
+	}
 
 // GetArmy 获取军队
 func (m *Manager) GetArmy(armyID int64) *Army {
@@ -331,6 +354,136 @@ func (m *Manager) OnArmyArrival(army *Army) {
 	}
 }
 
+// OnCollectComplete 采集完成回调 (由WalkSimulator调用)
+func (m *Manager) OnCollectComplete(army *Army) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	// 获取场景
+	s := m.sceneMgr.GetScene(army.SceneID)
+	if s == nil {
+		army.FinishCollect()
+		delete(m.collectingArmies, army.ID)
+		return
+	}
+
+	// 获取资源点
+	target := s.GetObjectManager().GetObject(army.March.TargetID)
+	if target == nil {
+		army.FinishCollect()
+		delete(m.collectingArmies, army.ID)
+		// 资源点消失，直接返回城池
+		m.startReturnMarch(army)
+		return
+	}
+
+	// 读取资源点数据
+	objData := target.GetObjectData()
+	if objData == nil || objData.Amount <= 0 {
+		army.FinishCollect()
+		delete(m.collectingArmies, army.ID)
+		m.startReturnMarch(army)
+		return
+	}
+
+	// 计算采集量
+	loadCapacity := army.CalcLoadCapacity() - army.GetCurrentLoad()
+	if loadCapacity <= 0 {
+		loadCapacity = 0
+	}
+	collectAmount := objData.Amount
+	if collectAmount > loadCapacity {
+		collectAmount = loadCapacity
+	}
+
+	// 装载资源
+	army.AddLoad(objData.ResourceType, collectAmount)
+
+	// 更新资源点剩余量
+	newAmount := objData.Amount - collectAmount
+	if newAmount <= 0 {
+		// 资源点耗尽，移除
+		s.GetObjectManager().RemoveObject(target.ID)
+		log.Printf("[March] resource node %d depleted, removed", target.ID)
+	} else {
+		s.GetObjectManager().UpdateObjectAmount(target.ID, newAmount)
+	}
+
+	log.Printf("[March] army %d collected %d resource type=%d from node %d",
+		army.ID, collectAmount, objData.ResourceType, target.ID)
+
+	// 完成采集
+	army.FinishCollect()
+	delete(m.collectingArmies, army.ID)
+
+	// 开始返回行军
+	m.startReturnMarch(army)
+}
+
+// startReturnMarch 开始返回行军
+func (m *Manager) startReturnMarch(army *Army) {
+	x, y := city.DefaultCityPosition(army.OwnerID)
+	returnPos := scene.Vector2{X: x, Y: y}
+	path := []scene.Vector2{army.Position, returnPos}
+	speed := m.calcMarchSpeed(army)
+
+	army.StartMarch(MarchTypeReturn, 0, returnPos, path, speed)
+	m.marchingArmies[army.ID] = army
+	m.walker.AddArmy(army)
+}
+
+// spawnArmyEntity 在场景中创建军队实体
+func (m *Manager) spawnArmyEntity(army *Army) {
+	if m.sceneMgr == nil {
+		return
+	}
+	s := m.sceneMgr.GetScene(army.SceneID)
+	if s == nil {
+		return
+	}
+	entity := scene.NewEntity(army.ID, scene.EntityTypeArmy, army.Position)
+	entity.SceneID = army.SceneID
+	entity.SetData("owner_id", army.OwnerID)
+	entity.SetData("hero_id", army.HeroID)
+	s.AddEntity(entity)
+	army.entityID = army.ID
+}
+
+// removeArmyEntity 从场景移除军队实体
+func (m *Manager) removeArmyEntity(army *Army) {
+	if army.entityID == 0 || m.sceneMgr == nil {
+		return
+	}
+	s := m.sceneMgr.GetScene(army.SceneID)
+	if s == nil {
+		return
+	}
+	s.RemoveEntity(army.entityID)
+}
+
+// moveArmyEntity 更新军队在场景中的位置
+func (m *Manager) moveArmyEntity(army *Army) {
+	if army.entityID == 0 || m.sceneMgr == nil {
+		return
+	}
+	s := m.sceneMgr.GetScene(army.SceneID)
+	if s == nil {
+		return
+	}
+	s.MoveEntity(army.entityID, army.Position)
+}
+
+// GetCollectingArmies 获取所有采集中的军队
+func (m *Manager) GetCollectingArmies() []*Army {
+	m.mutex.RLock()
+	defer m.mutex.RUnlock()
+	armies := make([]*Army, 0, len(m.collectingArmies))
+	for _, army := range m.collectingArmies {
+		armies = append(armies, army)
+	}
+	return armies
+}
+
 // handleCollectArrival 处理采集到达
 func (m *Manager) handleCollectArrival(army *Army) {
 	// 获取场景
@@ -352,6 +505,9 @@ func (m *Manager) handleCollectArrival(army *Army) {
 
 	// 从行军列表移除
 	delete(m.marchingArmies, army.ID)
+
+	// 加入采集列表
+	m.collectingArmies[army.ID] = army
 
 	// 开始采集
 	army.StartCollect(30 * time.Second) // 30秒采集时间
@@ -454,11 +610,26 @@ func (m *Manager) handleAttackArrival(army *Army) {
 
 // handleReturnArrival 处理返回到达
 func (m *Manager) handleReturnArrival(army *Army) {
+	// 将携带的资源加入玩家背包
+	if m.resourceAdder != nil {
+		total := army.LoadFood + army.LoadWood + army.LoadStone + army.LoadGold
+		if total > 0 {
+			if err := m.resourceAdder(army.OwnerID, army.LoadFood, army.LoadWood, army.LoadStone, army.LoadGold); err != nil {
+				log.Printf("[March] failed to add resources to player %d: %v", army.OwnerID, err)
+			} else {
+				log.Printf("[March] player %d received resources: food=%d wood=%d stone=%d gold=%d",
+					army.OwnerID, army.LoadFood, army.LoadWood, army.LoadStone, army.LoadGold)
+			}
+		}
+	}
+	army.ClearLoad()
+
+	// 更新场景实体位置
+	m.moveArmyEntity(army)
+
 	// 返回完成
 	army.FinishMarch()
 	delete(m.marchingArmies, army.ID)
-
-	// TODO: 将携带的资源加入玩家背包
 }
 
 // handleReinforceArrival 处理支援到达

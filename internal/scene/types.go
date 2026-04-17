@@ -15,11 +15,12 @@ const (
 	EntityTypeMonster
 	EntityTypeResource
 	EntityTypeBuilding
+	EntityTypeArmy
 )
 
 // String 返回实体类型名称
 func (t EntityType) String() string {
-	names := []string{"player", "npc", "monster", "resource", "building"}
+	names := []string{"player", "npc", "monster", "resource", "building", "army"}
 	if int(t) < len(names) {
 		return names[t]
 	}
