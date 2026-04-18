@@ -201,28 +201,39 @@ func (s *Server) Start() error {
 			return gate.EncodePacket(gate.MsgTypeResponse, errResp), nil
 		}
 
-		// 发送推送消息
+		// 先发送响应
+		respData, _ := json.Marshal(result)
+		msg.Sess.Send(gate.EncodePacket(gate.MsgTypeResponse, respData))
+
+		// 再发送模块自带的推送消息
 		if result != nil && len(result.Push) > 0 {
 			for _, p := range result.Push {
 				msg.Sess.Send(gate.EncodePacket(gate.MsgTypePush, p.Data))
 			}
 		}
 
-		// 检查是否涉及资源变动的操作，主动推送资源更新
-		resourceOps := map[uint16]bool{
-			5003: true, // train
-			5006: true, // complete_train
-			5011: true, // dismiss
-			5007: true, // heal
-			5010: true, // complete_heal
-			7002: true, // upgrade
-		}
-		if resourceOps[msg.MsgID] {
-			s.pushResourceUpdate(msg.Sess.RID)
+		// 操作成功后，涉及资源变动的主动推送资源更新
+		if result != nil && result.Code == 0 {
+			resourceOps := map[uint16]bool{
+				5003: true, // train
+				5011: true, // dismiss
+				5007: true, // heal
+				7002: true, // upgrade
+			}
+			if resourceOps[msg.MsgID] {
+				s.pushResourceUpdate(msg.Sess.RID)
+			}
+			// complete_train 只在真正有完成结果时推送
+			if msg.MsgID == 5006 {
+				if cnt, ok := result.Data["count"]; ok {
+					if c, _ := cnt.(int); c > 0 {
+						s.pushResourceUpdate(msg.Sess.RID)
+					}
+				}
+			}
 		}
 
-		respData, _ := json.Marshal(result)
-		return gate.EncodePacket(gate.MsgTypeResponse, respData), nil
+		return nil, nil
 	})
 
 	// 6. 连接 RPC
