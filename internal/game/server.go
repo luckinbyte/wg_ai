@@ -54,6 +54,38 @@ func NewServer(cfg *config.GameConfig) *Server {
 	}
 }
 
+// PushToPlayer 向在线玩家推送消息
+func (s *Server) PushToPlayer(rid int64, msgID uint16, payload any) {
+	sess := s.sessionMgr.Get(rid)
+	if sess == nil {
+		return
+	}
+	data, err := json.Marshal(payload)
+	if err != nil {
+		return
+	}
+	packet := gate.EncodePacket(gate.MsgTypePush, data)
+	sess.Send(packet)
+}
+
+// pushResourceUpdate 推送资源更新给玩家
+func (s *Server) pushResourceUpdate(rid int64) {
+	playerData, err := s.dataStore.GetPlayer(rid)
+	if err != nil || playerData == nil {
+		return
+	}
+	s.PushToPlayer(rid, 1003, map[string]any{
+		"code": 0,
+		"data": map[string]any{
+			"rid":    rid,
+			"food":   playerData.GetField("food"),
+			"wood":   playerData.GetField("wood"),
+			"stone":  playerData.GetField("stone"),
+			"gold":   playerData.GetField("gold"),
+		},
+	})
+}
+
 func (s *Server) Start() error {
 	// 1. 初始化数据层
 	s.dataStore = data.NewPlayerStore()
@@ -169,6 +201,26 @@ func (s *Server) Start() error {
 			return gate.EncodePacket(gate.MsgTypeResponse, errResp), nil
 		}
 
+		// 发送推送消息
+		if result != nil && len(result.Push) > 0 {
+			for _, p := range result.Push {
+				msg.Sess.Send(gate.EncodePacket(gate.MsgTypePush, p.Data))
+			}
+		}
+
+		// 检查是否涉及资源变动的操作，主动推送资源更新
+		resourceOps := map[uint16]bool{
+			5003: true, // train
+			5006: true, // complete_train
+			5011: true, // dismiss
+			5007: true, // heal
+			5010: true, // complete_heal
+			7002: true, // upgrade
+		}
+		if resourceOps[msg.MsgID] {
+			s.pushResourceUpdate(msg.Sess.RID)
+		}
+
 		respData, _ := json.Marshal(result)
 		return gate.EncodePacket(gate.MsgTypeResponse, respData), nil
 	})
@@ -214,6 +266,8 @@ func (s *Server) Start() error {
 			playerData.SetField("gold", toFloat64(cur)+float64(gold))
 		}
 		playerData.MarkDirty()
+		// 推送资源更新给在线玩家
+		s.pushResourceUpdate(rid)
 		return nil
 	})
 

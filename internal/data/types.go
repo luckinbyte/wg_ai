@@ -19,10 +19,10 @@ func NewPlayerData(rid int64) *PlayerData {
 	return &PlayerData{
 		RID: rid,
 		Base: map[string]any{
-			"food":  int64(10000),
-			"wood":  int64(10000),
-			"stone": int64(5000),
-			"gold":  int64(2000),
+			"food":  int64(10000000),
+			"wood":  int64(10000000),
+			"stone": int64(5000000),
+			"gold":  int64(2000000),
 		},
 		Arrays: make(map[string]any),
 		Dirty:  true,
