@@ -17,10 +17,15 @@ type PlayerData struct {
 // NewPlayerData 创建空的玩家数据
 func NewPlayerData(rid int64) *PlayerData {
 	return &PlayerData{
-		RID:    rid,
-		Base:   make(map[string]any),
+		RID: rid,
+		Base: map[string]any{
+			"food":  int64(10000),
+			"wood":  int64(10000),
+			"stone": int64(5000),
+			"gold":  int64(2000),
+		},
 		Arrays: make(map[string]any),
-		Dirty:  false,
+		Dirty:  true,
 	}
 }
 
