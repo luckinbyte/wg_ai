@@ -64,7 +64,13 @@ func (s *Server) PushToPlayer(rid int64, msgID uint16, payload any) {
 	if err != nil {
 		return
 	}
-	packet := gate.EncodePacket(gate.MsgTypePush, data)
+	// Push wire format: [MsgType(0x03)][MsgID(2B)][JSON payload]
+	msgIdBytes := []byte{byte(msgID >> 8), byte(msgID)}
+	pushPayload := make([]byte, 2+len(data))
+	pushPayload[0] = msgIdBytes[0]
+	pushPayload[1] = msgIdBytes[1]
+	copy(pushPayload[2:], data)
+	packet := gate.EncodePacket(gate.MsgTypePush, pushPayload)
 	sess.Send(packet)
 }
 
@@ -208,7 +214,11 @@ func (s *Server) Start() error {
 		// 再发送模块自带的推送消息
 		if result != nil && len(result.Push) > 0 {
 			for _, p := range result.Push {
-				msg.Sess.Send(gate.EncodePacket(gate.MsgTypePush, p.Data))
+				pushPayload := make([]byte, 2+len(p.Data))
+				pushPayload[0] = byte(p.MsgID >> 8)
+				pushPayload[1] = byte(p.MsgID)
+				copy(pushPayload[2:], p.Data)
+				msg.Sess.Send(gate.EncodePacket(gate.MsgTypePush, pushPayload))
 			}
 		}
 
@@ -461,7 +471,12 @@ type sessionPushAdapter struct {
 }
 
 func (s *sessionPushAdapter) Push(msgID uint16, data []byte) error {
-	packet := gate.EncodePacket(gate.MsgTypePush, data)
+	// Push wire format: [MsgType(0x03)][MsgID(2B)][data]
+	pushPayload := make([]byte, 2+len(data))
+	pushPayload[0] = byte(msgID >> 8)
+	pushPayload[1] = byte(msgID)
+	copy(pushPayload[2:], data)
+	packet := gate.EncodePacket(gate.MsgTypePush, pushPayload)
 	return s.sess.Send(packet)
 }
 
