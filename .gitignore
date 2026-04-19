@@ -5,7 +5,7 @@
 *.so
 *.dylib
 bin/
-game
+/game
 
 # Test binary
 *.test
