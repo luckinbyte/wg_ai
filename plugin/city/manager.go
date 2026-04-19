@@ -125,6 +125,9 @@ func (m *Manager) UpgradeBuilding(data baseplugin.DataAccessor, buildingType int
 	if city == nil {
 		return nil, fmt.Errorf("city not initialized")
 	}
+	if len(city.BuildQueue) > 0 {
+		return nil, fmt.Errorf("build queue is full")
+	}
 
 	currentLevel := 0
 	if building, ok := city.Buildings[buildingType]; ok {

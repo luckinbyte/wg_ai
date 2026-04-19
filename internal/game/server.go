@@ -45,6 +45,10 @@ type Server struct {
 
 	// 行军系统
 	marchMgr *march.Manager
+
+	// 建筑完成检查
+	buildCompleteTicker *time.Ticker
+	buildCompleteDone   chan struct{}
 }
 
 func NewServer(cfg *config.GameConfig) *Server {
@@ -89,6 +93,43 @@ func (s *Server) pushResourceUpdate(rid int64) {
 			"stone":  playerData.GetField("stone"),
 			"gold":   playerData.GetField("gold"),
 		},
+	})
+}
+
+func (s *Server) startBuildCompleteTicker() {
+	s.buildCompleteTicker = time.NewTicker(5 * time.Second)
+	s.buildCompleteDone = make(chan struct{})
+	go func() {
+		for {
+			select {
+			case <-s.buildCompleteDone:
+				return
+			case <-s.buildCompleteTicker.C:
+				s.checkBuildCompletions()
+			}
+		}
+	}()
+}
+
+func (s *Server) checkBuildCompletions() {
+	if s.dataStore == nil {
+		return
+	}
+	_ = s.dataStore.ForEachLoadedPlayer(func(rid int64, p *data.PlayerData) error {
+		adapter := &playerDataAdapter{PlayerData: p}
+		completed, err := cityplugin.CompleteBuilds(adapter)
+		if err != nil || len(completed) == 0 {
+			return nil
+		}
+		for _, item := range completed {
+			s.PushToPlayer(rid, 6401, map[string]any{
+				"building_type": item.BuildingType,
+				"target_level":  item.TargetLevel,
+				"queue_id":      item.ID,
+			})
+		}
+		s.pushResourceUpdate(rid)
+		return nil
 	})
 }
 
@@ -142,6 +183,9 @@ func (s *Server) Start() error {
 
 	// 4.5 启动行军管理器
 	s.marchMgr.Start()
+
+	// 4.6 启动建筑完成检查
+	s.startBuildCompleteTicker()
 
 	// 3. 加载路由配置
 	if s.config.Plugin.RouteFile != "" {
@@ -378,6 +422,13 @@ func (s *Server) Stop() {
 		s.marchMgr.Stop()
 	}
 	s.logLifecycle("phase 5/8 stop march manager done")
+
+	s.logLifecycle("phase 5.5/8 stop build complete ticker start")
+	if s.buildCompleteTicker != nil {
+		s.buildCompleteTicker.Stop()
+		close(s.buildCompleteDone)
+	}
+	s.logLifecycle("phase 5.5/8 stop build complete ticker done")
 
 	s.logLifecycle("phase 6/8 stop agent manager start")
 	if s.agentMgr != nil {

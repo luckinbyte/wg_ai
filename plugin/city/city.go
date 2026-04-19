@@ -154,3 +154,11 @@ func DefaultCityPosition(rid int64) (float64, float64) {
 func GetCity(data baseplugin.DataAccessor) (*CityData, error) {
 	return (&Manager{}).GetCity(data)
 }
+
+func CompleteBuilds(data baseplugin.DataAccessor) ([]BuildQueueItem, error) {
+	if globalSceneMgr == nil {
+		return nil, fmt.Errorf("scene manager not initialized")
+	}
+	mgr := NewManager(globalSceneMgr)
+	return mgr.CompleteReadyBuilds(data)
+}
