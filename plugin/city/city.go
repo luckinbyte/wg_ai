@@ -155,6 +155,10 @@ func GetCity(data baseplugin.DataAccessor) (*CityData, error) {
 	return (&Manager{}).GetCity(data)
 }
 
+func GetBuildQueue(data baseplugin.DataAccessor) ([]BuildQueueItem, error) {
+	return (&Manager{}).GetBuildQueue(data)
+}
+
 func CompleteBuilds(data baseplugin.DataAccessor) ([]BuildQueueItem, error) {
 	if globalSceneMgr == nil {
 		return nil, fmt.Errorf("scene manager not initialized")

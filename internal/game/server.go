@@ -46,9 +46,8 @@ type Server struct {
 	// 行军系统
 	marchMgr *march.Manager
 
-	// 建筑完成检查
-	buildCompleteTicker *time.Ticker
-	buildCompleteDone   chan struct{}
+	// 统一时间轮
+	timingWheel *TimingWheel
 }
 
 func NewServer(cfg *config.GameConfig) *Server {
@@ -87,50 +86,165 @@ func (s *Server) pushResourceUpdate(rid int64) {
 	s.PushToPlayer(rid, 1003, map[string]any{
 		"code": 0,
 		"data": map[string]any{
-			"rid":    rid,
-			"food":   playerData.GetField("food"),
-			"wood":   playerData.GetField("wood"),
-			"stone":  playerData.GetField("stone"),
-			"gold":   playerData.GetField("gold"),
+			"rid":   rid,
+			"food":  playerData.GetField("food"),
+			"wood":  playerData.GetField("wood"),
+			"stone": playerData.GetField("stone"),
+			"gold":  playerData.GetField("gold"),
 		},
 	})
 }
 
-func (s *Server) startBuildCompleteTicker() {
-	s.buildCompleteTicker = time.NewTicker(5 * time.Second)
-	s.buildCompleteDone = make(chan struct{})
-	go func() {
-		for {
-			select {
-			case <-s.buildCompleteDone:
-				return
-			case <-s.buildCompleteTicker.C:
-				s.checkBuildCompletions()
-			}
+func (s *Server) registerBuildEvent(data *playerDataAdapter, rid int64) {
+	if s.timingWheel == nil || data == nil {
+		return
+	}
+
+	queue, err := cityplugin.GetBuildQueue(data)
+	if err != nil || len(queue) == 0 {
+		return
+	}
+
+	for _, item := range queue {
+		finishTime := time.Unix(item.FinishTime, 0)
+		if time.Now().Before(finishTime) {
+			eventID := fmt.Sprintf("build_%d", rid)
+			s.timingWheel.RegisterEvent(&TimedEvent{
+				ID:     eventID,
+				Type:   EventBuildComplete,
+				RID:    rid,
+				FireAt: finishTime,
+				Callback: func() {
+					s.handleBuildComplete(rid)
+				},
+			})
+			return
 		}
-	}()
+	}
 }
 
-func (s *Server) checkBuildCompletions() {
+func (s *Server) handleBuildComplete(rid int64) {
 	if s.dataStore == nil {
 		return
 	}
+
+	playerData, err := s.dataStore.GetPlayer(rid)
+	if err != nil || playerData == nil {
+		return
+	}
+
+	adapter := &playerDataAdapter{PlayerData: playerData}
+	completed, err := cityplugin.CompleteBuilds(adapter)
+	if err != nil || len(completed) == 0 {
+		return
+	}
+
+	for _, item := range completed {
+		s.PushToPlayer(rid, 6401, map[string]any{
+			"building_type": item.BuildingType,
+			"target_level":  item.TargetLevel,
+			"queue_id":      item.ID,
+		})
+	}
+	s.pushResourceUpdate(rid)
+}
+
+func (s *Server) registerTrainEvent(rid int64, queueID int64, finishTime int64) {
+	if s.timingWheel == nil || queueID == 0 || finishTime <= 0 {
+		return
+	}
+
+	eventID := fmt.Sprintf("train_%d_%d", rid, queueID)
+	s.timingWheel.RegisterEvent(&TimedEvent{
+		ID:     eventID,
+		Type:   EventTrainComplete,
+		RID:    rid,
+		FireAt: time.Unix(finishTime, 0),
+		Callback: func() {
+			s.handleTrainComplete(rid, queueID)
+		},
+	})
+}
+
+func (s *Server) cancelTrainEvent(rid int64, queueID int64) {
+	if s.timingWheel == nil || queueID == 0 {
+		return
+	}
+	s.timingWheel.CancelEvent(fmt.Sprintf("train_%d_%d", rid, queueID))
+}
+
+func (s *Server) handleTrainComplete(rid int64, queueID int64) {
+	if s.dataStore == nil {
+		return
+	}
+
+	playerData, err := s.dataStore.GetPlayer(rid)
+	if err != nil || playerData == nil {
+		return
+	}
+
+	adapter := &playerDataAdapter{PlayerData: playerData}
+	mgr := soldierplugin.GetSoldierManager()
+	if mgr == nil {
+		return
+	}
+
+	item, err := mgr.CompleteTrain(adapter, queueID)
+	if err != nil {
+		return
+	}
+
+	s.PushToPlayer(rid, 6301, map[string]any{
+		"queue_id":     item.ID,
+		"soldier_id":   item.SoldierID,
+		"soldier_type": item.SoldierType,
+		"level":        item.Level,
+		"count":        item.Count,
+	})
+	s.pushResourceUpdate(rid)
+}
+
+func toInt64(v any) int64 {
+	switch val := v.(type) {
+	case int64:
+		return val
+	case int:
+		return int64(val)
+	case float64:
+		return int64(val)
+	default:
+		return 0
+	}
+}
+
+func (s *Server) registerExistingBuildEvents() {
+	if s.dataStore == nil || s.timingWheel == nil {
+		return
+	}
+
 	_ = s.dataStore.ForEachLoadedPlayer(func(rid int64, p *data.PlayerData) error {
-		adapter := &playerDataAdapter{PlayerData: p}
-		completed, err := cityplugin.CompleteBuilds(adapter)
-		if err != nil || len(completed) == 0 {
-			return nil
-		}
-		for _, item := range completed {
-			s.PushToPlayer(rid, 6401, map[string]any{
-				"building_type": item.BuildingType,
-				"target_level":  item.TargetLevel,
-				"queue_id":      item.ID,
-			})
-		}
-		s.pushResourceUpdate(rid)
+		s.registerBuildEvent(&playerDataAdapter{PlayerData: p}, rid)
 		return nil
 	})
+}
+
+func (s *Server) cancelCompletedTrainEvents(rid int64, completed any) {
+	if completed == nil {
+		return
+	}
+
+	switch items := completed.(type) {
+	case []map[string]any:
+		for _, item := range items {
+			s.cancelTrainEvent(rid, toInt64(item["queue_id"]))
+		}
+	case []any:
+		for _, raw := range items {
+			if item, ok := raw.(map[string]any); ok {
+				s.cancelTrainEvent(rid, toInt64(item["queue_id"]))
+			}
+		}
+	}
 }
 
 func (s *Server) Start() error {
@@ -184,8 +298,9 @@ func (s *Server) Start() error {
 	// 4.5 启动行军管理器
 	s.marchMgr.Start()
 
-	// 4.6 启动建筑完成检查
-	s.startBuildCompleteTicker()
+	// 4.6 启动统一时间轮
+	s.timingWheel = NewTimingWheel()
+	s.timingWheel.Start()
 
 	// 3. 加载路由配置
 	if s.config.Plugin.RouteFile != "" {
@@ -277,10 +392,22 @@ func (s *Server) Start() error {
 			if resourceOps[msg.MsgID] {
 				s.pushResourceUpdate(msg.Sess.RID)
 			}
-			// complete_train 只在真正有完成结果时推送
+			if msg.MsgID == 7002 {
+				s.registerBuildEvent(&playerDataAdapter{PlayerData: playerData}, msg.Sess.RID)
+			}
+			if msg.MsgID == 5003 && result.Data != nil {
+				s.registerTrainEvent(msg.Sess.RID, toInt64(result.Data["queue_id"]), toInt64(result.Data["finish_time"]))
+			}
+			if msg.MsgID == 5004 && result.Data != nil {
+				s.cancelTrainEvent(msg.Sess.RID, toInt64(result.Data["queue_id"]))
+			}
+			if msg.MsgID == 7003 && s.timingWheel != nil {
+				s.timingWheel.CancelEvent(fmt.Sprintf("build_%d", msg.Sess.RID))
+			}
 			if msg.MsgID == 5006 {
-				if cnt, ok := result.Data["count"]; ok {
-					if c, _ := cnt.(int); c > 0 {
+				if result.Data != nil {
+					s.cancelCompletedTrainEvents(msg.Sess.RID, result.Data["completed"])
+					if toInt64(result.Data["count"]) > 0 {
 						s.pushResourceUpdate(msg.Sess.RID)
 					}
 				}
@@ -301,6 +428,8 @@ func (s *Server) Start() error {
 
 	// 6.1 从数据库加载所有玩家城池到大地图
 	s.loadCitiesFromDB()
+	// 当前启动流程只把城池投影加载到场景，已加载玩家数据为空时这里会自然跳过。
+	s.registerExistingBuildEvents()
 
 	// 6.2 启动场景刷新器 (生成资源点和怪物)
 	if sc := s.sceneMgr.GetScene(1); sc != nil {
@@ -423,12 +552,11 @@ func (s *Server) Stop() {
 	}
 	s.logLifecycle("phase 5/8 stop march manager done")
 
-	s.logLifecycle("phase 5.5/8 stop build complete ticker start")
-	if s.buildCompleteTicker != nil {
-		s.buildCompleteTicker.Stop()
-		close(s.buildCompleteDone)
+	s.logLifecycle("phase 5.5/8 stop timing wheel start")
+	if s.timingWheel != nil {
+		s.timingWheel.Stop()
 	}
-	s.logLifecycle("phase 5.5/8 stop build complete ticker done")
+	s.logLifecycle("phase 5.5/8 stop timing wheel done")
 
 	s.logLifecycle("phase 6/8 stop agent manager start")
 	if s.agentMgr != nil {
@@ -499,7 +627,17 @@ type playerDataAdapter struct {
 	*data.PlayerData
 }
 
+func (a *playerDataAdapter) RID() int64 {
+	if a == nil || a.PlayerData == nil {
+		return 0
+	}
+	return a.PlayerData.RID
+}
+
 func (a *playerDataAdapter) GetField(key string) (any, error) {
+	if key == "rid" {
+		return a.RID(), nil
+	}
 	return a.PlayerData.GetField(key), nil
 }
 
@@ -673,8 +811,8 @@ func (s *Server) loadCitiesFromDB() {
 	for _, c := range cities {
 		// 反序列化 buildings
 		var buildings map[int]struct {
-			Type     int `json:"type"`
-			Level    int `json:"level"`
+			Type     int   `json:"type"`
+			Level    int   `json:"level"`
 			HP       int64 `json:"hp"`
 			EntityID int64 `json:"entity_id"`
 		}
