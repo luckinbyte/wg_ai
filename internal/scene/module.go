@@ -56,11 +56,11 @@ func (m *Module) handleEnter(ctx *baseplugin.LogicContext, params map[string]any
 	// 获取或创建场景
 	s := m.mgr.GetScene(int64(sceneID))
 	if s == nil {
-		// 创建默认场景 1000x1000, 格子大小50
+		// 创建默认场景 500x500, 格子大小50
 		s = m.mgr.CreateScene(SceneConfig{
 			ID:       int64(sceneID),
-			Width:    1000,
-			Height:   1000,
+			Width:    500,
+			Height:   500,
 			GridSize: 50,
 		})
 	}

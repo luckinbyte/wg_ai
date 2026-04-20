@@ -313,7 +313,8 @@ func (m *Manager) CancelMarch(armyID int64) error {
 		return fmt.Errorf("army %d is not marching", armyID)
 	}
 
-	// 从移动模拟器移除
+	delete(m.marchingArmies, armyID)
+	delete(m.collectingArmies, armyID)
 	m.walker.RemoveArmy(armyID)
 
 	// 开始返回行军
@@ -323,10 +324,12 @@ func (m *Manager) CancelMarch(armyID int64) error {
 	speed := m.calcMarchSpeed(army)
 
 	army.StartMarch(MarchTypeReturn, 0, returnPos, path, speed)
+	m.marchingArmies[armyID] = army
 	m.walker.AddArmy(army)
 
 	return nil
 }
+
 
 // ForceReturn 强制返回
 func (m *Manager) ForceReturn(armyID int64) error {

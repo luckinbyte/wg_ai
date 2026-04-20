@@ -22,7 +22,7 @@ buildings:
     level: 2
     name: "城堡 Lv.2"
     hp: 20000
-    build_time: 3600
+    build_time: 30
     cost_food: 500
     cost_wood: 1000
     cost_stone: 500
@@ -40,7 +40,7 @@ buildings:
     level: 3
     name: "城堡 Lv.3"
     hp: 35000
-    build_time: 7200
+    build_time: 30
     cost_food: 1200
     cost_wood: 1800
     cost_stone: 1000
@@ -58,7 +58,7 @@ buildings:
     level: 1
     name: "兵营 Lv.1"
     hp: 2000
-    build_time: 300
+    build_time: 30
     cost_food: 100
     cost_wood: 200
     cost_stone: 100
@@ -76,7 +76,7 @@ buildings:
     level: 2
     name: "兵营 Lv.2"
     hp: 3500
-    build_time: 900
+    build_time: 30
     cost_food: 300
     cost_wood: 400
     cost_stone: 250
@@ -94,7 +94,7 @@ buildings:
     level: 1
     name: "农场 Lv.1"
     hp: 1000
-    build_time: 180
+    build_time: 30
     cost_food: 50
     cost_wood: 100
     cost_stone: 50
@@ -112,7 +112,7 @@ buildings:
     level: 2
     name: "农场 Lv.2"
     hp: 1800
-    build_time: 480
+    build_time: 30
     cost_food: 120
     cost_wood: 220
     cost_stone: 100
@@ -130,7 +130,7 @@ buildings:
     level: 1
     name: "伐木场 Lv.1"
     hp: 1000
-    build_time: 180
+    build_time: 30
     cost_food: 50
     cost_wood: 80
     cost_stone: 50
@@ -148,7 +148,7 @@ buildings:
     level: 2
     name: "伐木场 Lv.2"
     hp: 1800
-    build_time: 480
+    build_time: 30
     cost_food: 120
     cost_wood: 180
     cost_stone: 100
@@ -166,7 +166,7 @@ buildings:
     level: 1
     name: "采石场 Lv.1"
     hp: 1200
-    build_time: 240
+    build_time: 30
     cost_food: 80
     cost_wood: 100
     cost_stone: 80
@@ -184,7 +184,7 @@ buildings:
     level: 2
     name: "采石场 Lv.2"
     hp: 2200
-    build_time: 600
+    build_time: 30
     cost_food: 180
     cost_wood: 220
     cost_stone: 180
@@ -202,7 +202,7 @@ buildings:
     level: 1
     name: "医院 Lv.1"
     hp: 1800
-    build_time: 360
+    build_time: 30
     cost_food: 120
     cost_wood: 150
     cost_stone: 120
@@ -220,7 +220,7 @@ buildings:
     level: 1
     name: "仓库 Lv.1"
     hp: 2200
-    build_time: 360
+    build_time: 30
     cost_food: 100
     cost_wood: 200
     cost_stone: 150

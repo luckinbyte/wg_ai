@@ -146,8 +146,8 @@ func InitPlayerCity(data baseplugin.DataAccessor, rid int64) (*CityData, error) 
 }
 
 func DefaultCityPosition(rid int64) (float64, float64) {
-	baseX := float64(100 + (rid%100)*10)
-	baseY := float64(100 + ((rid/100)%100)*10)
+	baseX := float64(10 + (rid%48)*10)
+	baseY := float64(10 + ((rid/48)%48)*10)
 	return baseX, baseY
 }
 

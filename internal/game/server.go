@@ -786,7 +786,7 @@ func (s *Server) loadCitiesFromDB() {
 
 	sc := s.sceneMgr.GetScene(1)
 	if sc == nil {
-		sc = s.sceneMgr.CreateScene(scene.SceneConfig{ID: 1, Width: 1000, Height: 1000, GridSize: 50})
+		sc = s.sceneMgr.CreateScene(scene.SceneConfig{ID: 1, Width: 500, Height: 500, GridSize: 50})
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
